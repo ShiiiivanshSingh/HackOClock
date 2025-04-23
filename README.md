@@ -1,50 +1,74 @@
-# Welcome to your Expo app 👋
+# wellness habit tracker
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+mobile app to monitor and improve daily wellness habits through tracking, reminders and visualization.
 
-## Get started
+## features
 
-1. Install dependencies
+- **user onboarding**: firebase auth with email/google login
+- **google fit integration**: auto-fetch sleep and exercise data
+- **manual logging**: water intake and stress/mood tracking
+- **personalized reminders**: smart notifications for water, breaks, and sleep
+- **dashboard**: visualize daily progress and weekly trends
+- **settings**: customize goals and notification preferences
 
+## tech stack
+
+- **frontend**: react native, expo, react navigation
+- **state management**: context api / redux
+- **backend**: firebase (auth + firestore)
+- **local storage**: asyncstorage / sqlite
+- **apis**: google fit rest api
+- **notifications**: expo notifications / fcm
+- **visualization**: victory native / recharts
+
+## setup
+
+1. install dependencies:
    ```bash
    npm install
    ```
 
-2. Start the app
-
-   ```bash
-    npx expo start
+2. create firebase project and add config to `.env` file:
+   ```
+   FIREBASE_API_KEY=your-api-key
+   FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+   FIREBASE_PROJECT_ID=your-project-id
+   FIREBASE_STORAGE_BUCKET=your-storage-bucket
+   FIREBASE_MESSAGING_SENDER_ID=your-sender-id
+   FIREBASE_APP_ID=your-app-id
    ```
 
-In the output, you'll find options to open the app in a
+3. set up google fit api credentials in google cloud console
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+4. start development server:
+   ```bash
+   npx expo start
+   ```
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## development roadmap
 
-## Get a fresh project
+1. user authentication
+2. google fit integration
+3. manual data logging
+4. notification system
+5. dashboard and visualization
+6. settings and preferences
 
-When you're ready, run:
+## folder structure
 
-```bash
-npm run reset-project
+```
+/app                    # expo router app directory
+  /_layout.js           # root layout
+  /index.js             # home screen/dashboard
+  /auth/                # authentication screens
+  /tracking/            # logging screens
+  /stats/               # visualization screens
+  /settings/            # user preferences
+/components/            # reusable components
+/hooks/                 # custom hooks
+/services/              # api services
+/utils/                 # helper functions
+/contexts/              # state management
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+supports un sustainable development goal 3: good health and well-being
