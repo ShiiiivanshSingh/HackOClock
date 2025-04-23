@@ -12,7 +12,7 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  const colorScheme = useColorScheme() || 'light';
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
@@ -29,11 +29,48 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: {
+            backgroundColor: colorScheme === 'dark' ? '#121212' : '#F8F9FA',
+          },
+          animation: 'slide_from_right',
+        }}
+      >
+        <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
+        <Stack.Screen
+          name="onboarding"
+          options={{
+            animation: 'slide_from_bottom',
+            presentation: 'modal',
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="reminders"
+          options={{
+            headerShown: false,
+            presentation: 'card',
+            animation: 'slide_from_right',
+          }}
+        />
         <Stack.Screen name="+not-found" />
       </Stack>
-      <StatusBar style="auto" />
+      <StatusBarColor />
     </ThemeProvider>
+  );
+}
+
+// Color scheme aware status bar
+export function StatusBarColor() {
+  const colorScheme = useColorScheme() || 'light';
+  
+  return (
+    <StatusBar 
+      style={colorScheme === 'dark' ? 'light' : 'dark'}
+      backgroundColor="transparent"
+      translucent
+    />
   );
 }

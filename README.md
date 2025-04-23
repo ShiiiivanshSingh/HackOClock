@@ -1,74 +1,74 @@
-# wellness habit tracker
+# Daily Wellness Tracker
 
-mobile app to monitor and improve daily wellness habits through tracking, reminders and visualization.
+A mobile application that helps users monitor and improve their daily wellness habits including hydration, sleep, exercise, and stress management. Built with React Native and Expo.
 
-## features
+## Features
 
-- **user onboarding**: firebase auth with email/google login
-- **google fit integration**: auto-fetch sleep and exercise data
-- **manual logging**: water intake and stress/mood tracking
-- **personalized reminders**: smart notifications for water, breaks, and sleep
-- **dashboard**: visualize daily progress and weekly trends
-- **settings**: customize goals and notification preferences
+- **User Onboarding**: Stylish introduction carousel explaining app features
+- **Google Fit Integration**: Automatically sync sleep and activity data
+- **Manual Logging**: Easily log water intake and stress/mood
+- **Data Visualization**: Beautiful charts showing trends over time
+- **Personalized Reminders**: Smart notifications for hydration, breaks, and sleep
+- **Dashboard**: At-a-glance view of daily wellness metrics
+- **Customizable Goals**: Set personalized targets for water intake, sleep, and step count
 
-## tech stack
+## Screenshots
 
-- **frontend**: react native, expo, react navigation
-- **state management**: context api / redux
-- **backend**: firebase (auth + firestore)
-- **local storage**: asyncstorage / sqlite
-- **apis**: google fit rest api
-- **notifications**: expo notifications / fcm
-- **visualization**: victory native / recharts
+![App Screenshots](./screenshots.png)
 
-## setup
+## Tech Stack
 
-1. install dependencies:
-   ```bash
-   npm install
-   ```
+- **Frontend**: React Native, Expo, TypeScript
+- **UI Components**: Custom neumorphic components, bento grid layouts
+- **Data Visualization**: Custom React Native charts
+- **Navigation**: Expo Router
+- **Haptics**: Expo Haptics for tactile feedback
+- **Animations**: Smooth transitions and micro-animations
+- **Theming**: Light/dark mode support
 
-2. create firebase project and add config to `.env` file:
-   ```
-   FIREBASE_API_KEY=your-api-key
-   FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
-   FIREBASE_PROJECT_ID=your-project-id
-   FIREBASE_STORAGE_BUCKET=your-storage-bucket
-   FIREBASE_MESSAGING_SENDER_ID=your-sender-id
-   FIREBASE_APP_ID=your-app-id
-   ```
+## Installation
 
-3. set up google fit api credentials in google cloud console
-
-4. start development server:
-   ```bash
-   npx expo start
-   ```
-
-## development roadmap
-
-1. user authentication
-2. google fit integration
-3. manual data logging
-4. notification system
-5. dashboard and visualization
-6. settings and preferences
-
-## folder structure
-
+1. Clone the repository:
 ```
-/app                    # expo router app directory
-  /_layout.js           # root layout
-  /index.js             # home screen/dashboard
-  /auth/                # authentication screens
-  /tracking/            # logging screens
-  /stats/               # visualization screens
-  /settings/            # user preferences
-/components/            # reusable components
-/hooks/                 # custom hooks
-/services/              # api services
-/utils/                 # helper functions
-/contexts/              # state management
+git clone https://github.com/yourusername/daily-wellness-tracker.git
+cd daily-wellness-tracker
 ```
 
-supports un sustainable development goal 3: good health and well-being
+2. Install dependencies:
+```
+npm install
+```
+
+3. Start the development server:
+```
+npm start
+```
+
+4. Run on your device or simulator:
+```
+npm run ios
+npm run android
+```
+
+## Development Roadmap
+
+- [ ] Implement Firebase Authentication
+- [ ] Add Google Fit API integration
+- [ ] Build data persistence with AsyncStorage/SQLite
+- [ ] Enable cloud syncing with Firebase Firestore
+- [ ] Add push notification system
+- [ ] Implement data export functionality
+- [ ] Add unit and integration tests
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- Designed following 2025 UI trends with soft edges, neumorphic components, and focus on user experience
+- Part of the SDG 3: Good Health and Well-Being initiative
