@@ -3,6 +3,8 @@
 <div align="center">
   <h1>EasyFit 🌟</h1>
   
+  <p>Team Name: meowz</p>
+  
   <p>Your personal companion for holistic health and wellness tracking</p>
 
   <a href="https://github.com/ShiiiivanshSingh/HackOClock/stargazers">
@@ -211,7 +213,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 <div align="center">
-  <p>Built with ♥️ by Shivansh!</p>
+  <p>Built with ♥️ by team meowz!</p>
   <p>
     <a href="https://github.com/ShiiiivanshSingh/HackOClock/issues">Report Bug</a>
     ·
