@@ -42,7 +42,9 @@
     "react-native-screens": "~4.4.0",
     "react-native-svg": "^15.11.2",
     "react-native-web": "~0.19.13",
-    "react-native-webview": "13.12.5"
+    "react-native-webview": "13.12.5",
+    "@android/health-connect-client": "^1.1.0",
+    "react-native-health-connect": "^1.2.3"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

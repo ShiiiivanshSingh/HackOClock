@@ -1,0 +1,5 @@
+dependencies {
+    implementation "androidx.health.connect:connect-client:1.1.0-alpha02"
+    implementation "androidx.concurrent:concurrent-futures:1.1.0"
+    implementation "com.google.guava:guava:31.1-android"
+} 

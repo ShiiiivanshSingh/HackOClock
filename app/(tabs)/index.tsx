@@ -10,7 +10,7 @@ import Colors from '@/constants/Colors';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useAsyncStorage } from '@/hooks/useAsyncStorage';
 import { format } from 'date-fns';
-import { useMockData } from '@/hooks/useMockData';
+import { useHealthConnect } from '@/hooks/useHealthConnect';
 
 type StressLevel = 'Low' | 'Medium' | 'High';
 type LogEntry = {
@@ -32,8 +32,8 @@ export default function Dashboard() {
   const [greeting, setGreeting] = useState("Today");
   const [lastSynced, setLastSynced] = useState("Never");
 
-  // Use mock data that changes every second
-  const mockData = useMockData();
+  // Replace useMockData with useHealthConnect
+  const { healthData, isInitialized, error, syncData } = useHealthConnect();
   
   const waterGoal = 3000;
   const sleepGoal = "8-9 hours";
@@ -66,9 +66,9 @@ export default function Dashboard() {
     }
   };
 
-  const syncData = () => {
+  const handleSync = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    loadTodayData();
+    await syncData();
     setLastSynced("Just now");
   };
 
@@ -87,9 +87,9 @@ export default function Dashboard() {
     return 'High';
   };
 
-  const waterPercentage = Math.min(Math.round((mockData.waterIntake / waterGoal) * 100), 100);
-  const sleepPercentage = Math.min(Math.round((mockData.sleepHours / 9) * 100), 100);
-  const stepsPercentage = Math.min(Math.round((mockData.steps / stepsGoal) * 100), 100);
+  const waterPercentage = Math.min(Math.round((healthData.waterIntake / waterGoal) * 100), 100);
+  const sleepPercentage = Math.min(Math.round((healthData.sleepHours / 9) * 100), 100);
+  const stepsPercentage = Math.min(Math.round((healthData.steps / stepsGoal) * 100), 100);
 
   const renderWaterProgress = () => {
     const size = isSmallScreen ? 90 : 100;
@@ -136,7 +136,7 @@ export default function Dashboard() {
             styles.cardValue,
             { fontSize: isSmallScreen ? 22 : 26 }
           ]}>
-            {mockData.waterIntake}
+            {healthData.waterIntake}
           </ThemedText>
           <ThemedText style={styles.mlText}>
             ml
@@ -192,7 +192,7 @@ export default function Dashboard() {
               <View style={styles.statRow}>
                 <IconSymbol name="drop.fill" size={20} color="#2196F3" />
                 <ThemedText style={styles.statLabel}>Today:</ThemedText>
-                <ThemedText style={styles.statValue}>{waterGoal - mockData.waterIntake} ml</ThemedText>
+                <ThemedText style={styles.statValue}>{waterGoal - healthData.waterIntake} ml</ThemedText>
               </View>
             </View>
           </View>
@@ -208,7 +208,7 @@ export default function Dashboard() {
             <ThemedText style={styles.metricTitle}>Steps</ThemedText>
             <View style={styles.metricContent}>
               <IconSymbol name="figure.walk" size={24} color="#4CAF50" />
-              <ThemedText style={styles.metricValue}>{mockData.steps.toLocaleString()}</ThemedText>
+              <ThemedText style={styles.metricValue}>{healthData.steps.toLocaleString()}</ThemedText>
             </View>
             <View style={styles.progressBar}>
               <View style={[styles.progressFill, { width: `${stepsPercentage}%`, backgroundColor: '#4CAF50' }]} />
@@ -224,7 +224,7 @@ export default function Dashboard() {
             <ThemedText style={styles.metricTitle}>Sleep</ThemedText>
             <View style={styles.metricContent}>
               <IconSymbol name="moon.stars.fill" size={24} color="#9C27B0" />
-              <ThemedText style={styles.metricValue}>{mockData.sleepHours} hr</ThemedText>
+              <ThemedText style={styles.metricValue}>{healthData.sleepHours} hr</ThemedText>
             </View>
             <View style={styles.progressBar}>
               <View style={[styles.progressFill, { width: `${sleepPercentage}%`, backgroundColor: '#9C27B0' }]} />
@@ -243,8 +243,8 @@ export default function Dashboard() {
             <IconSymbol name="plus" size={20} color="#2196F3" />
           </View>
           <View style={[styles.moodContent, { paddingVertical: 12, paddingHorizontal: 16 }]}>
-            <ThemedText style={[styles.moodEmoji, { paddingVertical: 12, paddingHorizontal: 16 }]}>{getStressEmoji(getStressLevel(mockData.stressLevel))}</ThemedText>
-            <ThemedText style={styles.moodLabel}>{getStressLevel(mockData.stressLevel)}</ThemedText>
+            <ThemedText style={[styles.moodEmoji, { paddingVertical: 12, paddingHorizontal: 16 }]}>{getStressEmoji(getStressLevel(healthData.stressLevel))}</ThemedText>
+            <ThemedText style={styles.moodLabel}>{getStressLevel(healthData.stressLevel)}</ThemedText>
           </View>
         </Pressable>
 
@@ -256,7 +256,7 @@ export default function Dashboard() {
           <View style={styles.heartCardContent}>
             <View>
               <ThemedText style={styles.heartTitle}>Heart Rate</ThemedText>
-              <ThemedText style={styles.bpmValue}>{mockData.heartRate} BPM</ThemedText>
+              <ThemedText style={styles.bpmValue}>{healthData.heartRate} BPM</ThemedText>
             </View>
             <IconSymbol name="heart.fill" size={32} color="#FF5252" />
           </View>
@@ -267,7 +267,7 @@ export default function Dashboard() {
           <ThemedText style={styles.lastSyncedText}>Last synced: {lastSynced}</ThemedText>
           <Pressable 
             style={styles.syncButton}
-            onPress={syncData}
+            onPress={handleSync}
           >
             <ThemedText style={styles.syncButtonText}>Sync Now</ThemedText>
           </Pressable>

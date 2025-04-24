@@ -1,4 +1,4 @@
-import { StyleSheet, ScrollView, View, Pressable, Switch, Alert } from 'react-native';
+import { StyleSheet, ScrollView, View, Pressable, Switch, Alert, Modal, ViewStyle, TextStyle } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -8,6 +8,32 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { useAsyncStorage } from '@/hooks/useAsyncStorage';
+
+// Define styles type
+type Styles = {
+  container: ViewStyle;
+  contentContainer: ViewStyle;
+  header: ViewStyle;
+  title: TextStyle;
+  section: ViewStyle;
+  sectionHeader: TextStyle;
+  card: ViewStyle;
+  settingRow: ViewStyle;
+  pressableRow: ViewStyle;
+  settingInfo: ViewStyle;
+  iconContainer: ViewStyle;
+  settingLabel: TextStyle;
+  settingDescription: TextStyle;
+  divider: ViewStyle;
+  button: ViewStyle;
+  buttonText: TextStyle;
+  modalOverlay: ViewStyle;
+  modalContent: ViewStyle;
+  modalTitle: TextStyle;
+  optionsList: ViewStyle;
+  optionItem: ViewStyle;
+  optionText: TextStyle;
+};
 
 // Define settings type
 type UserSettings = {
@@ -21,11 +47,196 @@ type UserSettings = {
   syncEnabled: boolean;
 };
 
+type OptionModalProps = {
+  visible: boolean;
+  onClose: () => void;
+  onSelect: (value: number) => void;
+  options: { value: number; label: string }[];
+  selectedValue: number;
+  title: string;
+  color: string;
+};
+
+const styles = StyleSheet.create<Styles>({
+  container: {
+    flex: 1,
+  },
+  contentContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 60,
+    paddingBottom: 40,
+  },
+  header: {
+    marginBottom: 32,
+    paddingHorizontal: 4,
+  },
+  title: {
+    fontSize: 34,
+    fontWeight: 'bold',
+  },
+  section: {
+    marginBottom: 32,
+  },
+  sectionHeader: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 16,
+    marginLeft: 4,
+  },
+  card: {
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  settingRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+  },
+  pressableRow: {
+    opacity: 1,
+    transform: [{ scale: 1 }],
+  },
+  settingInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    flex: 1,
+  },
+  iconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  settingLabel: {
+    fontSize: 17,
+    fontWeight: '500',
+  },
+  settingDescription: {
+    fontSize: 13,
+    opacity: 0.6,
+    marginTop: 4,
+  },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    marginHorizontal: 16,
+  },
+  button: {
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+  },
+  buttonText: {
+    fontSize: 17,
+    fontWeight: '500',
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingTop: 24,
+    paddingBottom: 40,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  optionsList: {
+    paddingHorizontal: 16,
+  },
+  optionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    marginVertical: 4,
+  },
+  optionText: {
+    fontSize: 17,
+  },
+});
+
+const OptionModal = ({ visible, onClose, onSelect, options, selectedValue, title, color }: OptionModalProps) => {
+  const colorScheme = useColorScheme();
+  const backgroundColor = colorScheme === 'dark' ? '#1c1c1e' : '#fff';
+  const overlayColor = colorScheme === 'dark' ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.4)';
+
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+    >
+      <Pressable 
+        style={[styles.modalOverlay, { backgroundColor: overlayColor }]} 
+        onPress={onClose}
+      >
+        <View style={[styles.modalContent, { backgroundColor }]}>
+          <ThemedText style={styles.modalTitle}>{title}</ThemedText>
+          <View style={styles.optionsList}>
+            {options.map((option) => (
+              <Pressable
+                key={option.value}
+                style={[
+                  styles.optionItem,
+                  selectedValue === option.value && { backgroundColor: `${color}15` }
+                ]}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  onSelect(option.value);
+                  onClose();
+                }}
+              >
+                <ThemedText style={[
+                  styles.optionText,
+                  selectedValue === option.value && { color, fontWeight: '600' }
+                ]}>
+                  {option.label}
+                </ThemedText>
+                {selectedValue === option.value && (
+                  <IconSymbol 
+                    size={20} 
+                    name="checkmark" 
+                    color={color} 
+                  />
+                )}
+              </Pressable>
+            ))}
+          </View>
+        </View>
+      </Pressable>
+    </Modal>
+  );
+};
+
 export default function SettingsScreen() {
   const colorScheme = useColorScheme() || 'light';
   const tintColor = Colors[colorScheme].tint;
   const router = useRouter();
   const dividerColor = colorScheme === 'dark' ? Colors[colorScheme].borderColor : '#e0e0e0';
+
+  // Modal visibility state
+  const [activeModal, setActiveModal] = useState<'water' | 'sleep' | 'steps' | null>(null);
 
   // Get settings from AsyncStorage with defaults
   const { value: settings, setValue: saveSettings, loading } = 
@@ -51,6 +262,28 @@ export default function SettingsScreen() {
   
   const [isDarkMode, setIsDarkMode] = useState(colorScheme === 'dark');
   const [syncEnabled, setSyncEnabled] = useState(true);
+
+  // Options for dropdowns
+  const waterOptions = [
+    { value: 2000, label: '2000 ml' },
+    { value: 2500, label: '2500 ml' },
+    { value: 3000, label: '3000 ml' },
+    { value: 3500, label: '3500 ml' },
+  ];
+
+  const sleepOptions = [
+    { value: 6, label: '6 hours' },
+    { value: 7, label: '7 hours' },
+    { value: 8, label: '8 hours' },
+    { value: 9, label: '9 hours' },
+  ];
+
+  const stepOptions = [
+    { value: 6000, label: '6,000 steps' },
+    { value: 8000, label: '8,000 steps' },
+    { value: 10000, label: '10,000 steps' },
+    { value: 12000, label: '12,000 steps' },
+  ];
 
   // Load settings from storage when component mounts
   useEffect(() => {
@@ -92,360 +325,285 @@ export default function SettingsScreen() {
         text: 'Sign Out', 
         style: 'destructive',
         onPress: () => {
-          // In a real app, this would clear auth tokens and navigate to login
           Alert.alert('Signed Out', 'You have been signed out successfully.');
         }
       }
     ]);
   };
 
-  // Preset options for reminder frequencies
-  const reminderOptions = ['Every 1 hr', 'Every 2 hrs', 'Every 3 hrs', 'Morning only', 'Evening only'];
-
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      <View style={styles.header}>
-        <ThemedText style={styles.title}>Settings</ThemedText>
-      </View>
+    <>
+      <ScrollView 
+        style={[
+          styles.container,
+          { backgroundColor: colorScheme === 'dark' ? '#000' : '#f6f6f6' }
+        ]} 
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.header}>
+          <ThemedText style={styles.title}>Settings</ThemedText>
+        </View>
 
-      {/* Goals Section */}
-      <View style={styles.section}>
-        <ThemedText style={styles.sectionHeader}>Goals</ThemedText>
-        
-        <ThemedView style={styles.card}>
-          <View style={styles.settingRow}>
-            <View style={styles.settingInfo}>
-              <IconSymbol size={18} name="drop.fill" color="#0a7ea4" />
-              <ThemedText style={styles.settingLabel}>Water Goal</ThemedText>
-            </View>
-            <View style={styles.goalOptions}>
-              <Pressable 
-                style={[styles.goalPill, waterGoal === 2000 && styles.selectedGoal]} 
-                onPress={() => updateSetting('waterGoal', 2000, setWaterGoal)}
-              >
-                <ThemedText style={styles.goalText}>2000 ml</ThemedText>
-              </Pressable>
-              <Pressable 
-                style={[styles.goalPill, waterGoal === 2500 && styles.selectedGoal]} 
-                onPress={() => updateSetting('waterGoal', 2500, setWaterGoal)}
-              >
-                <ThemedText style={styles.goalText}>2500 ml</ThemedText>
-              </Pressable>
-              <Pressable 
-                style={[styles.goalPill, waterGoal === 3000 && styles.selectedGoal]} 
-                onPress={() => updateSetting('waterGoal', 3000, setWaterGoal)}
-              >
-                <ThemedText style={styles.goalText}>3000 ml</ThemedText>
-              </Pressable>
-            </View>
-          </View>
-
-          <View style={[styles.divider, { backgroundColor: dividerColor }]} />
-
-          <View style={styles.settingRow}>
-            <View style={styles.settingInfo}>
-              <IconSymbol size={18} name="bed.double.fill" color="#7e5ae6" />
-              <ThemedText style={styles.settingLabel}>Sleep Goal</ThemedText>
-            </View>
-            <View style={styles.goalOptions}>
-              <Pressable 
-                style={[styles.goalPill, sleepGoal === 7 && styles.selectedGoal]} 
-                onPress={() => updateSetting('sleepGoal', 7, setSleepGoal)}
-              >
-                <ThemedText style={styles.goalText}>7 hrs</ThemedText>
-              </Pressable>
-              <Pressable 
-                style={[styles.goalPill, sleepGoal === 8 && styles.selectedGoal]} 
-                onPress={() => updateSetting('sleepGoal', 8, setSleepGoal)}
-              >
-                <ThemedText style={styles.goalText}>8 hrs</ThemedText>
-              </Pressable>
-              <Pressable 
-                style={[styles.goalPill, sleepGoal === 9 && styles.selectedGoal]} 
-                onPress={() => updateSetting('sleepGoal', 9, setSleepGoal)}
-              >
-                <ThemedText style={styles.goalText}>9 hrs</ThemedText>
-              </Pressable>
-            </View>
-          </View>
-
-          <View style={[styles.divider, { backgroundColor: dividerColor }]} />
-
-          <View style={styles.settingRow}>
-            <View style={styles.settingInfo}>
-              <IconSymbol size={18} name="figure.walk" color="#4CAF50" />
-              <ThemedText style={styles.settingLabel}>Step Goal</ThemedText>
-            </View>
-            <View style={styles.goalOptions}>
-              <Pressable 
-                style={[styles.goalPill, stepGoal === 8000 && styles.selectedGoal]} 
-                onPress={() => updateSetting('stepGoal', 8000, setStepGoal)}
-              >
-                <ThemedText style={styles.goalText}>8k</ThemedText>
-              </Pressable>
-              <Pressable 
-                style={[styles.goalPill, stepGoal === 10000 && styles.selectedGoal]} 
-                onPress={() => updateSetting('stepGoal', 10000, setStepGoal)}
-              >
-                <ThemedText style={styles.goalText}>10k</ThemedText>
-              </Pressable>
-              <Pressable 
-                style={[styles.goalPill, stepGoal === 12000 && styles.selectedGoal]} 
-                onPress={() => updateSetting('stepGoal', 12000, setStepGoal)}
-              >
-                <ThemedText style={styles.goalText}>12k</ThemedText>
-              </Pressable>
-            </View>
-          </View>
-        </ThemedView>
-      </View>
-
-      {/* Notifications Section */}
-      <View style={styles.section}>
-        <ThemedText style={styles.sectionHeader}>Notifications</ThemedText>
-        
-        <ThemedView style={styles.card}>
-          <Pressable 
-            style={styles.settingRow}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              router.push('/reminders');
-            }}
-          >
-            <View style={styles.settingInfo}>
-              <IconSymbol size={18} name="bell.fill" color="#0a7ea4" />
-              <View>
-                <ThemedText style={styles.settingLabel}>Manage All Reminders</ThemedText>
-                <ThemedText style={styles.settingDescription}>Advanced reminder settings</ThemedText>
-              </View>
-            </View>
-            <IconSymbol size={18} name="chevron.right" color={Colors[colorScheme].text} />
-          </Pressable>
-
-          <View style={[styles.divider, { backgroundColor: dividerColor }]} />
+        {/* Goals Section */}
+        <View style={styles.section}>
+          <ThemedText style={styles.sectionHeader}>Goals</ThemedText>
           
-          <View style={styles.settingRow}>
-            <View style={styles.settingInfo}>
-              <IconSymbol size={18} name="drop.fill" color="#0a7ea4" />
-              <View>
-                <ThemedText style={styles.settingLabel}>Water Reminders</ThemedText>
-                <ThemedText style={styles.settingDescription}>Every 2 hours, 8 AM - 8 PM</ThemedText>
+          <ThemedView style={[styles.card, { backgroundColor: colorScheme === 'dark' ? '#1c1c1e' : '#fff' }]}>
+            <Pressable 
+              style={[styles.settingRow, styles.pressableRow]}
+              onPress={() => setActiveModal('water')}
+            >
+              <View style={styles.settingInfo}>
+                <View style={[styles.iconContainer, { backgroundColor: 'rgba(10, 126, 164, 0.1)' }]}>
+                  <IconSymbol size={20} name="drop.fill" color="#0a7ea4" />
+                </View>
+                <View>
+                  <ThemedText style={styles.settingLabel}>Water Goal</ThemedText>
+                  <ThemedText style={styles.settingDescription}>{waterGoal} ml per day</ThemedText>
+                </View>
               </View>
-            </View>
-            <Switch
-              trackColor={{ false: '#767577', true: '#a1d8e6' }}
-              thumbColor={waterReminders ? tintColor : '#f4f3f4'}
-              ios_backgroundColor="#3e3e3e"
-              onValueChange={(value) => updateSetting('waterReminders', value, setWaterReminders)}
-              value={waterReminders}
-            />
-          </View>
+              <IconSymbol size={18} name="chevron.right" color={Colors[colorScheme].text} />
+            </Pressable>
 
-          <View style={[styles.divider, { backgroundColor: dividerColor }]} />
+            <View style={[styles.divider, { backgroundColor: dividerColor }]} />
 
-          <View style={styles.settingRow}>
-            <View style={styles.settingInfo}>
-              <IconSymbol size={18} name="figure.walk" color="#4CAF50" />
-              <View>
-                <ThemedText style={styles.settingLabel}>Break Reminders</ThemedText>
-                <ThemedText style={styles.settingDescription}>Every 1 hour, during work hours</ThemedText>
+            <Pressable 
+              style={[styles.settingRow, styles.pressableRow]}
+              onPress={() => setActiveModal('sleep')}
+            >
+              <View style={styles.settingInfo}>
+                <View style={[styles.iconContainer, { backgroundColor: 'rgba(126, 90, 230, 0.1)' }]}>
+                  <IconSymbol size={20} name="bed.double.fill" color="#7e5ae6" />
+                </View>
+                <View>
+                  <ThemedText style={styles.settingLabel}>Sleep Goal</ThemedText>
+                  <ThemedText style={styles.settingDescription}>{sleepGoal} hours per night</ThemedText>
+                </View>
               </View>
-            </View>
-            <Switch
-              trackColor={{ false: '#767577', true: '#a1d8e6' }}
-              thumbColor={breakReminders ? tintColor : '#f4f3f4'}
-              ios_backgroundColor="#3e3e3e"
-              onValueChange={(value) => updateSetting('breakReminders', value, setBreakReminders)}
-              value={breakReminders}
-            />
-          </View>
+              <IconSymbol size={18} name="chevron.right" color={Colors[colorScheme].text} />
+            </Pressable>
 
-          <View style={[styles.divider, { backgroundColor: dividerColor }]} />
+            <View style={[styles.divider, { backgroundColor: dividerColor }]} />
 
-          <View style={styles.settingRow}>
-            <View style={styles.settingInfo}>
-              <IconSymbol size={18} name="bed.double.fill" color="#7e5ae6" />
-              <View>
-                <ThemedText style={styles.settingLabel}>Sleep Wind-down</ThemedText>
-                <ThemedText style={styles.settingDescription}>30 minutes before bedtime</ThemedText>
+            <Pressable 
+              style={[styles.settingRow, styles.pressableRow]}
+              onPress={() => setActiveModal('steps')}
+            >
+              <View style={styles.settingInfo}>
+                <View style={[styles.iconContainer, { backgroundColor: 'rgba(76, 175, 80, 0.1)' }]}>
+                  <IconSymbol size={20} name="figure.walk" color="#4CAF50" />
+                </View>
+                <View>
+                  <ThemedText style={styles.settingLabel}>Step Goal</ThemedText>
+                  <ThemedText style={styles.settingDescription}>{stepGoal.toLocaleString()} steps per day</ThemedText>
+                </View>
               </View>
-            </View>
-            <Switch
-              trackColor={{ false: '#767577', true: '#a1d8e6' }}
-              thumbColor={sleepReminders ? tintColor : '#f4f3f4'}
-              ios_backgroundColor="#3e3e3e"
-              onValueChange={(value) => updateSetting('sleepReminders', value, setSleepReminders)}
-              value={sleepReminders}
-            />
-          </View>
-        </ThemedView>
-      </View>
+              <IconSymbol size={18} name="chevron.right" color={Colors[colorScheme].text} />
+            </Pressable>
+          </ThemedView>
+        </View>
 
-      {/* App Preferences Section */}
-      <View style={styles.section}>
-        <ThemedText style={styles.sectionHeader}>App Preferences</ThemedText>
-        
-        <ThemedView style={styles.card}>
-          <View style={styles.settingRow}>
-            <View style={styles.settingInfo}>
-              <IconSymbol size={18} name="moon.stars.fill" color="#9966FF" />
-              <ThemedText style={styles.settingLabel}>Dark Mode</ThemedText>
-            </View>
-            <Switch
-              trackColor={{ false: '#767577', true: '#a1d8e6' }}
-              thumbColor={isDarkMode ? tintColor : '#f4f3f4'}
-              ios_backgroundColor="#3e3e3e"
-              onValueChange={(value) => updateSetting('darkMode', value, setIsDarkMode)}
-              value={isDarkMode}
-            />
-          </View>
-
-          <View style={[styles.divider, { backgroundColor: dividerColor }]} />
-
-          <View style={styles.settingRow}>
-            <View style={styles.settingInfo}>
-              <IconSymbol size={18} name="arrow.clockwise" color="#0a7ea4" />
-              <View>
-                <ThemedText style={styles.settingLabel}>Auto-sync with Google Fit</ThemedText>
-                <ThemedText style={styles.settingDescription}>Sync data automatically when app opens</ThemedText>
+        {/* Notifications Section */}
+        <View style={styles.section}>
+          <ThemedText style={styles.sectionHeader}>Notifications</ThemedText>
+          
+          <ThemedView style={[styles.card, { backgroundColor: colorScheme === 'dark' ? '#1c1c1e' : '#fff' }]}>
+            <Pressable 
+              style={[styles.settingRow, styles.pressableRow]}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.push('/reminders');
+              }}
+            >
+              <View style={styles.settingInfo}>
+                <View style={[styles.iconContainer, { backgroundColor: 'rgba(10, 126, 164, 0.1)' }]}>
+                  <IconSymbol size={20} name="bell.fill" color="#0a7ea4" />
+                </View>
+                <View>
+                  <ThemedText style={styles.settingLabel}>Manage All Reminders</ThemedText>
+                  <ThemedText style={styles.settingDescription}>Advanced reminder settings</ThemedText>
+                </View>
               </View>
-            </View>
-            <Switch
-              trackColor={{ false: '#767577', true: '#a1d8e6' }}
-              thumbColor={syncEnabled ? tintColor : '#f4f3f4'}
-              ios_backgroundColor="#3e3e3e"
-              onValueChange={(value) => updateSetting('syncEnabled', value, setSyncEnabled)}
-              value={syncEnabled}
-            />
-          </View>
-        </ThemedView>
-      </View>
+              <IconSymbol size={18} name="chevron.right" color={Colors[colorScheme].text} />
+            </Pressable>
 
-      {/* Account Section */}
-      <View style={styles.section}>
-        <ThemedText style={styles.sectionHeader}>Account</ThemedText>
-        
-        <ThemedView style={styles.card}>
-          <Pressable 
-            style={styles.button}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              Alert.alert('Privacy Policy', 'This would open the privacy policy in a web view.');
-            }}
-          >
-            <ThemedText style={[styles.buttonText, { color: tintColor }]}>Privacy Policy</ThemedText>
-          </Pressable>
+            <View style={[styles.divider, { backgroundColor: dividerColor }]} />
+            
+            {[
+              {
+                icon: "drop.fill",
+                color: "#0a7ea4",
+                label: "Water Reminders",
+                description: "Every 2 hours, 8 AM - 8 PM",
+                value: waterReminders,
+                setter: setWaterReminders,
+                key: 'waterReminders'
+              },
+              {
+                icon: "figure.walk",
+                color: "#4CAF50",
+                label: "Break Reminders",
+                description: "Every 1 hour, during work hours",
+                value: breakReminders,
+                setter: setBreakReminders,
+                key: 'breakReminders'
+              },
+              {
+                icon: "bed.double.fill",
+                color: "#7e5ae6",
+                label: "Sleep Wind-down",
+                description: "30 minutes before bedtime",
+                value: sleepReminders,
+                setter: setSleepReminders,
+                key: 'sleepReminders'
+              }
+            ].map((item, index, array) => (
+              <React.Fragment key={item.key}>
+                <View style={styles.settingRow}>
+                  <View style={styles.settingInfo}>
+                    <View style={[styles.iconContainer, { backgroundColor: `${item.color}15` }]}>
+                      <IconSymbol size={18} name={item.icon} color={item.color} />
+                    </View>
+                    <View>
+                      <ThemedText style={styles.settingLabel}>{item.label}</ThemedText>
+                      <ThemedText style={styles.settingDescription}>{item.description}</ThemedText>
+                    </View>
+                  </View>
+                  <Switch
+                    trackColor={{ false: '#767577', true: `${item.color}40` }}
+                    thumbColor={item.value ? item.color : '#f4f3f4'}
+                    ios_backgroundColor="#3e3e3e"
+                    onValueChange={(value) => updateSetting(item.key as keyof UserSettings, value, item.setter)}
+                    value={item.value}
+                  />
+                </View>
+                {index < array.length - 1 && (
+                  <View style={[styles.divider, { backgroundColor: dividerColor }]} />
+                )}
+              </React.Fragment>
+            ))}
+          </ThemedView>
+        </View>
+
+        {/* App Preferences Section */}
+        <View style={styles.section}>
+          <ThemedText style={styles.sectionHeader}>App Preferences</ThemedText>
           
-          <View style={[styles.divider, { backgroundColor: dividerColor }]} />
+          <ThemedView style={[styles.card, { backgroundColor: colorScheme === 'dark' ? '#1c1c1e' : '#fff' }]}>
+            <View style={styles.settingRow}>
+              <View style={styles.settingInfo}>
+                <View style={[styles.iconContainer, { backgroundColor: 'rgba(153, 102, 255, 0.1)' }]}>
+                  <IconSymbol size={18} name="moon.stars.fill" color="#9966FF" />
+                </View>
+                <ThemedText style={styles.settingLabel}>Dark Mode</ThemedText>
+              </View>
+              <Switch
+                trackColor={{ false: '#767577', true: '#9966FF40' }}
+                thumbColor={isDarkMode ? '#9966FF' : '#f4f3f4'}
+                ios_backgroundColor="#3e3e3e"
+                onValueChange={(value) => updateSetting('darkMode', value, setIsDarkMode)}
+                value={isDarkMode}
+              />
+            </View>
+
+            <View style={[styles.divider, { backgroundColor: dividerColor }]} />
+
+            <View style={styles.settingRow}>
+              <View style={styles.settingInfo}>
+                <View style={[styles.iconContainer, { backgroundColor: 'rgba(10, 126, 164, 0.1)' }]}>
+                  <IconSymbol size={18} name="arrow.clockwise" color="#0a7ea4" />
+                </View>
+                <View>
+                  <ThemedText style={styles.settingLabel}>Auto-sync</ThemedText>
+                  <ThemedText style={styles.settingDescription}>Sync data automatically</ThemedText>
+                </View>
+              </View>
+              <Switch
+                trackColor={{ false: '#767577', true: '#0a7ea440' }}
+                thumbColor={syncEnabled ? '#0a7ea4' : '#f4f3f4'}
+                ios_backgroundColor="#3e3e3e"
+                onValueChange={(value) => updateSetting('syncEnabled', value, setSyncEnabled)}
+                value={syncEnabled}
+              />
+            </View>
+          </ThemedView>
+        </View>
+
+        {/* Account Section */}
+        <View style={styles.section}>
+          <ThemedText style={styles.sectionHeader}>Account</ThemedText>
           
-          <Pressable 
-            style={styles.button}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              Alert.alert('Terms of Service', 'This would open the terms of service in a web view.');
-            }}
-          >
-            <ThemedText style={[styles.buttonText, { color: tintColor }]}>Terms of Service</ThemedText>
-          </Pressable>
-          
-          <View style={[styles.divider, { backgroundColor: dividerColor }]} />
-          
-          <Pressable 
-            style={styles.button}
-            onPress={handleSignOut}
-          >
-            <ThemedText style={[styles.buttonText, { color: '#FF3B30' }]}>Sign Out</ThemedText>
-          </Pressable>
-        </ThemedView>
-      </View>
-    </ScrollView>
+          <ThemedView style={[styles.card, { backgroundColor: colorScheme === 'dark' ? '#1c1c1e' : '#fff' }]}>
+            {[
+              {
+                label: "Privacy Policy",
+                color: tintColor,
+                onPress: () => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  Alert.alert('Privacy Policy', 'This would open the privacy policy in a web view.');
+                }
+              },
+              {
+                label: "Terms of Service",
+                color: tintColor,
+                onPress: () => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  Alert.alert('Terms of Service', 'This would open the terms of service in a web view.');
+                }
+              },
+              {
+                label: "Sign Out",
+                color: '#FF3B30',
+                onPress: handleSignOut
+              }
+            ].map((item, index, array) => (
+              <React.Fragment key={item.label}>
+                <Pressable 
+                  style={[styles.button, styles.pressableRow]}
+                  onPress={item.onPress}
+                >
+                  <ThemedText style={[styles.buttonText, { color: item.color }]}>{item.label}</ThemedText>
+                </Pressable>
+                {index < array.length - 1 && (
+                  <View style={[styles.divider, { backgroundColor: dividerColor }]} />
+                )}
+              </React.Fragment>
+            ))}
+          </ThemedView>
+        </View>
+      </ScrollView>
+
+      {/* Option Modals */}
+      <OptionModal
+        visible={activeModal === 'water'}
+        onClose={() => setActiveModal(null)}
+        onSelect={(value) => updateSetting('waterGoal', value, setWaterGoal)}
+        options={waterOptions}
+        selectedValue={waterGoal}
+        title="Water Goal"
+        color="#0a7ea4"
+      />
+
+      <OptionModal
+        visible={activeModal === 'sleep'}
+        onClose={() => setActiveModal(null)}
+        onSelect={(value) => updateSetting('sleepGoal', value, setSleepGoal)}
+        options={sleepOptions}
+        selectedValue={sleepGoal}
+        title="Sleep Goal"
+        color="#7e5ae6"
+      />
+
+      <OptionModal
+        visible={activeModal === 'steps'}
+        onClose={() => setActiveModal(null)}
+        onSelect={(value) => updateSetting('stepGoal', value, setStepGoal)}
+        options={stepOptions}
+        selectedValue={stepGoal}
+        title="Step Goal"
+        color="#4CAF50"
+      />
+    </>
   );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  contentContainer: {
-    padding: 16,
-    paddingTop: 60,
-    paddingBottom: 40,
-  },
-  header: {
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-  },
-  section: {
-    marginBottom: 24,
-  },
-  sectionHeader: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 12,
-    marginLeft: 4,
-  },
-  card: {
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  settingRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 12,
-  },
-  settingInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    flex: 1,
-  },
-  settingLabel: {
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  settingDescription: {
-    fontSize: 12,
-    opacity: 0.7,
-    marginTop: 2,
-  },
-  divider: {
-    height: 1,
-    marginVertical: 4,
-  },
-  goalOptions: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  goalPill: {
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 20,
-    backgroundColor: '#f0f0f0',
-  },
-  selectedGoal: {
-    backgroundColor: '#e0f2f7',
-    borderWidth: 1,
-    borderColor: '#0a7ea4',
-  },
-  goalText: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  button: {
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: '500',
-  },
-}); 
+} 

@@ -8,7 +8,7 @@ import { useAsyncStorage } from '@/hooks/useAsyncStorage';
 import { format, startOfWeek, addDays } from 'date-fns';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Stack } from 'expo-router';
-import { useMockData } from '@/hooks/useMockData';
+import { useHealthConnect } from '@/hooks/useHealthConnect';
 
 type LogEntry = {
   date: string;
@@ -41,8 +41,8 @@ export default function InsightsScreen() {
   const [activeTab, setActiveTab] = useState('weekly');
   const [selectedMetric, setSelectedMetric] = useState('all');
   
-  // Use mock data that changes every second
-  const mockData = useMockData();
+  // Replace useMockData with useHealthConnect
+  const { healthData, isInitialized, error } = useHealthConnect();
 
   // Generate dates for the current week
   const today = new Date();
@@ -136,10 +136,10 @@ export default function InsightsScreen() {
         {/* Main Progress Circle */}
         <View style={[styles.mainCard, { backgroundColor: colorScheme === 'dark' ? '#1c1c1e' : '#fff' }]}>
           <View style={[styles.progressSection, { padding: 20 }]}>
-            {renderCircularProgress(mockData.weeklyProgress, '#4CAF50', 
+            {renderCircularProgress(healthData.weeklyProgress, '#4CAF50', 
               <View style={[styles.innerProgressContent, { padding: 10 }]}>
-                <ThemedText style={[styles.progressPercent, { fontSize: 24, marginBottom: 4 }]}>{mockData.weeklyProgress}%</ThemedText>
-                <ThemedText style={[styles.progressSubtext, { fontSize: 14 }]}>{mockData.weeklySteps.toLocaleString()} steps</ThemedText>
+                <ThemedText style={[styles.progressPercent, { fontSize: 24, marginBottom: 4 }]}>{healthData.weeklyProgress}%</ThemedText>
+                <ThemedText style={[styles.progressSubtext, { fontSize: 14 }]}>{healthData.weeklySteps.toLocaleString()} steps</ThemedText>
               </View>
             )}
           </View>
@@ -147,13 +147,13 @@ export default function InsightsScreen() {
           <View style={styles.mainMetrics}>
             <View style={styles.metricItem}>
               <IconSymbol name="flame.fill" size={16} color="#FF9500" />
-              <ThemedText style={styles.metricValue}>{mockData.caloriesBurned}</ThemedText>
+              <ThemedText style={styles.metricValue}>{healthData.caloriesBurned}</ThemedText>
               <ThemedText style={styles.metricLabel}>Calories</ThemedText>
             </View>
             
             <View style={styles.metricItem}>
               <IconSymbol name="moon.fill" size={16} color="#9C27B0" />
-              <ThemedText style={styles.metricValue}>{mockData.hoursSlept}h</ThemedText>
+              <ThemedText style={styles.metricValue}>{healthData.sleepHours}h</ThemedText>
               <ThemedText style={styles.metricLabel}>Sleep</ThemedText>
             </View>
             
@@ -193,21 +193,21 @@ export default function InsightsScreen() {
           
           <View style={styles.weekStats}>
             <View style={styles.statBlock}>
-              <ThemedText style={styles.statNumber}>{mockData.activeDays}</ThemedText>
+              <ThemedText style={styles.statNumber}>{healthData.activeDays}</ThemedText>
               <ThemedText style={styles.statLabel}>Active Days</ThemedText>
             </View>
             
             <View style={styles.statDivider} />
             
             <View style={styles.statBlock}>
-              <ThemedText style={styles.statNumber}>{mockData.currentStreak}</ThemedText>
+              <ThemedText style={styles.statNumber}>{healthData.currentStreak}</ThemedText>
               <ThemedText style={styles.statLabel}>Day Streak</ThemedText>
             </View>
             
             <View style={styles.statDivider} />
             
             <View style={styles.statBlock}>
-              <ThemedText style={styles.statNumber}>{mockData.totalPoints}</ThemedText>
+              <ThemedText style={styles.statNumber}>{healthData.totalPoints}</ThemedText>
               <ThemedText style={styles.statLabel}>Total Points</ThemedText>
             </View>
           </View>
@@ -226,8 +226,8 @@ export default function InsightsScreen() {
               <ThemedText style={styles.activityTime}>Today, 7:30 AM</ThemedText>
             </View>
             <View style={styles.activityStats}>
-              <ThemedText style={styles.activityMetric}>{mockData.morningWalkDistance} km</ThemedText>
-              <ThemedText style={styles.activitySubMetric}>{mockData.morningWalkCalories} cal</ThemedText>
+              <ThemedText style={styles.activityMetric}>{healthData.morningWalkDistance} km</ThemedText>
+              <ThemedText style={styles.activitySubMetric}>{healthData.morningWalkCalories} cal</ThemedText>
             </View>
           </View>
           
@@ -240,8 +240,8 @@ export default function InsightsScreen() {
               <ThemedText style={styles.activityTime}>Today, 2:15 PM</ThemedText>
             </View>
             <View style={styles.activityStats}>
-              <ThemedText style={styles.activityMetric}>{mockData.waterIntake} ml</ThemedText>
-              <ThemedText style={styles.activitySubMetric}>{mockData.waterIntakeCups} cups</ThemedText>
+              <ThemedText style={styles.activityMetric}>{healthData.waterIntake} ml</ThemedText>
+              <ThemedText style={styles.activitySubMetric}>{healthData.waterIntakeCups} cups</ThemedText>
             </View>
           </View>
           
@@ -254,8 +254,8 @@ export default function InsightsScreen() {
               <ThemedText style={styles.activityTime}>Yesterday</ThemedText>
             </View>
             <View style={styles.activityStats}>
-              <ThemedText style={styles.activityMetric}>{mockData.sleepDuration}</ThemedText>
-              <ThemedText style={styles.activitySubMetric}>{mockData.sleepQuality}</ThemedText>
+              <ThemedText style={styles.activityMetric}>{healthData.sleepDuration}</ThemedText>
+              <ThemedText style={styles.activitySubMetric}>{healthData.sleepQuality}</ThemedText>
             </View>
           </View>
         </View>
