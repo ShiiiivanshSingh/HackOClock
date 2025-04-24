@@ -6,40 +6,44 @@
   <p>Your personal companion for holistic health and wellness tracking</p>
 
   <a href="https://github.com/ShiiiivanshSingh/HackOClock/stargazers">
-    <img src="https://img.shields.io/github/stars/ShiiiivanshSingh/HackOClock?style=for-the-badge&color=4CAF50" alt="stars" />
+    <img src="https://img.shields.io/badge/Stars-0-green?style=for-the-badge&color=4CAF50" alt="stars" />
   </a>
   <a href="https://github.com/ShiiiivanshSingh/HackOClock/network/members">
-    <img src="https://img.shields.io/github/forks/ShiiiivanshSingh/HackOClock?style=for-the-badge&color=4CAF50" alt="forks" />
+    <img src="https://img.shields.io/badge/Forks-0-green?style=for-the-badge&color=4CAF50" alt="forks" />
   </a>
   <a href="https://github.com/ShiiiivanshSingh/HackOClock/issues">
-    <img src="https://img.shields.io/github/issues/ShiiiivanshSingh/HackOClock?style=for-the-badge&color=4CAF50" alt="issues" />
+    <img src="https://img.shields.io/badge/Issues-0-green?style=for-the-badge&color=4CAF50" alt="issues" />
   </a>
   
   <p align="center">
-    <a href="#-key-features">Features</a> •
-    <a href="#-tech-stack">Tech Stack</a> •
-    <a href="#-getting-started">Getting Started</a> •
-    <a href="#-roadmap">Roadmap</a> •
-    <a href="#-contributing">Contributing</a>
+    <a href="#-key-features">✨ Features</a> &nbsp;&nbsp;•&nbsp;&nbsp;
+    <a href="#%EF%B8%8F-tech-stack">⚡ Tech Stack</a> &nbsp;&nbsp;•&nbsp;&nbsp;
+    <a href="#-getting-started">🚀 Getting Started</a> &nbsp;&nbsp;•&nbsp;&nbsp;
+    <a href="#-contributing">🤝 Contributing</a>
   </p>
   <hr>
 </div>
 
+<a name="overview"></a>
 ## 🌈 Overview
 
 Welcome to Daily Wellness Tracker! This comprehensive mobile application is designed to help you take control of your wellness journey. By combining cutting-edge technology with user-friendly design, we provide a seamless experience for tracking various aspects of your daily health and wellness routines.
 
+<a name="mission"></a>
 ### 🎯 Mission
 Our mission is to empower users to make informed decisions about their health by providing detailed insights into their daily wellness metrics. Whether you're focusing on better hydration, improved sleep patterns, or consistent exercise routines, Daily Wellness Tracker is your companion on this journey.
 
+<a name="key-features"></a>
 ## ✨ Key Features
 
+<a name="onboarding"></a>
 ### 🎓 User Onboarding
 * Beautiful introduction carousel
 * Step-by-step feature walkthrough
 * Personalized goal setting assistance
 * Interactive tutorial elements
 
+<a name="health-connect"></a>
 ### 🏃‍♂️ Health Connect Integration
 * Seamless sync with Android Health Connect
 * Real-time activity tracking
@@ -47,6 +51,7 @@ Our mission is to empower users to make informed decisions about their health by
 * Automated data synchronization
 * Privacy-focused health data management
 
+<a name="wellness-tracking"></a>
 ### 💧 Smart Wellness Tracking
 * **Hydration Monitoring**
   * Custom daily water intake goals
@@ -69,6 +74,7 @@ Our mission is to empower users to make informed decisions about their health by
   * Pattern identification
   * Wellness recommendations
 
+<a name="data-visualization"></a>
 ### 📊 Advanced Data Visualization
 * Interactive charts and graphs
 * Trend analysis
@@ -76,13 +82,15 @@ Our mission is to empower users to make informed decisions about their health by
 * Custom date range views
 * Exportable reports
 
+<a name="notifications"></a>
 ### 🔔 Smart Notification System
 * Contextual reminders
 * Customizable alert schedules
 * Activity-based prompts
 * Progress celebrations
 
-## 🛠️ Tech Stack
+<a name="tech-stack"></a>
+## ⚡ Tech Stack
 
 <div align="center">
   <img src="https://img.shields.io/badge/React_Native-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React Native">
@@ -91,37 +99,44 @@ Our mission is to empower users to make informed decisions about their health by
   <img src="https://img.shields.io/badge/Health_Connect-4CAF50?style=for-the-badge&logo=android&logoColor=white" alt="Health Connect">
 </div>
 
+<a name="architecture"></a>
 ### Frontend Architecture
-* **Framework**: React Native with Expo
-* **Language**: TypeScript for type-safe development
+* **Framework**: [React Native](https://reactnative.dev/) with [Expo](https://expo.dev/)
+* **Language**: [TypeScript](https://www.typescriptlang.org/) for type-safe development
 * **State Management**: React Context + Hooks
-* **Navigation**: Expo Router with deep linking support
+* **Navigation**: [Expo Router](https://expo.github.io/router/docs/) with deep linking support
 
+<a name="ui-ux"></a>
 ### UI/UX Elements
 * **Design System**: Custom neumorphic components
 * **Layout**: Responsive bento grid system
-* **Animations**: React Native Reanimated
-* **Haptics**: Expo Haptics integration
+* **Animations**: [React Native Reanimated](https://docs.swmansion.com/react-native-reanimated/)
+* **Haptics**: [Expo Haptics](https://docs.expo.dev/versions/latest/sdk/haptics/)
 
+<a name="data-management"></a>
 ### Data Management
-* **Local Storage**: AsyncStorage
-* **Health Data**: Health Connect API
+* **Local Storage**: [AsyncStorage](https://react-native-async-storage.github.io/async-storage/)
+* **Health Data**: [Health Connect API](https://developer.android.com/health-connect)
 * **State Persistence**: Custom hooks system
 * **Data Sync**: Background fetch support
 
+<a name="screenshots"></a>
 ## 📱 Screenshots
 
 ![App Screenshots](./screenshots.png)
 
+<a name="getting-started"></a>
 ## 🚀 Getting Started
 
+<a name="prerequisites"></a>
 ### Prerequisites
-* Node.js (LTS version)
-* npm or yarn
-* Android Studio (for Android development)
-* Health Connect app (for Android health features)
-* Xcode (for iOS development, macOS only)
+* [Node.js](https://nodejs.org/) (LTS version)
+* [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
+* [Android Studio](https://developer.android.com/studio) (for Android development)
+* [Health Connect app](https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata) (for Android health features)
+* [Xcode](https://developer.apple.com/xcode/) (for iOS development, macOS only)
 
+<a name="installation"></a>
 ### Installation Steps
 
 1. **Clone the Repository**
@@ -149,23 +164,7 @@ Our mission is to empower users to make informed decisions about their health by
    npm run android
    ```
 
-## 📝 Development Roadmap
-
-### Phase 1: Core Features
-- [ ] Firebase Authentication implementation
-- [ ] Health Connect API integration
-- [ ] Local data persistence setup
-
-### Phase 2: Enhanced Features
-- [ ] Cloud synchronization with Firestore
-- [ ] Push notification system
-- [ ] Data export functionality
-
-### Phase 3: Quality & Testing
-- [ ] Unit test implementation
-- [ ] Integration test suite
-- [ ] Performance optimization
-
+<a name="contributing"></a>
 ## 🤝 Contributing
 
 We welcome contributions! Here's how you can help:
@@ -176,6 +175,7 @@ We welcome contributions! Here's how you can help:
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
+<a name="developer"></a>
 ## 🔗 Connect With the Developer
 
 <div align="center">
@@ -190,14 +190,17 @@ We welcome contributions! Here's how you can help:
   </a>
 </div>
 
+<a name="license"></a>
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+<a name="acknowledgments"></a>
 ## 🙏 Acknowledgments
 
+* Built with [React Native](https://reactnative.dev/) and [Expo](https://expo.dev/)
 * Implements modern UI/UX trends with neumorphic design
-* Follows SDG 3: Good Health and Well-Being guidelines
+* Follows [SDG 3: Good Health and Well-Being](https://sdgs.un.org/goals/goal3) guidelines
 * Built with accessibility and user privacy in mind
 * Community-driven development approach
 
