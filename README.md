@@ -1,9 +1,9 @@
 <a name="readme-top"></a>
 
 <div align="center">
-  <h1>EasyFit 🌟</h1>
+  <h1>EasyFit 🌟 by team meowz</h1>
   
-  <p>Team Name: meowz</p>
+
   
   <p>Your personal companion for holistic health and wellness tracking</p>
 
