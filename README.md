@@ -1,7 +1,8 @@
 <a name="readme-top"></a>
 
 <div align="center">
-  <h1>EasyFit 🌟 by team meowz</h1>
+  <h1>EasyFit 🌟</h1>
+  <h2>by team meowz</h2>
   
 
   
