@@ -1,41 +1,43 @@
 {
   "expo": {
-    "name": "hack",
-    "slug": "hack",
+    "name": "HackOClock",
+    "slug": "HackOClock",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      },
+      "permissions": [
+        "NOTIFICATIONS",
+        "SCHEDULE_EXACT_ALARM",
+        "USE_EXACT_ALARM"
+      ],
+      "package": "com.hackoclock"
     },
     "plugins": [
-      "expo-router",
       [
-        "expo-splash-screen",
+        "expo-notifications",
         {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "icon": "./assets/notification-icon.png",
+          "color": "#ffffff",
+          "sounds": ["./assets/notification-sound.wav"]
         }
       ]
-    ],
-    "experiments": {
-      "typedRoutes": true
-    }
+    ]
   }
 }

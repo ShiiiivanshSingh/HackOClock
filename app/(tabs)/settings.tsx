@@ -299,6 +299,45 @@ export default function SettingsScreen() {
     }
   }, [loading, settings]);
 
+  const showSettingUpdateAlert = (settingName: string, value: any) => {
+    let message = '';
+    switch (settingName) {
+      case 'waterGoal':
+        message = `Water goal updated to ${value} ml per day`;
+        break;
+      case 'sleepGoal':
+        message = `Sleep goal updated to ${value} hours per night`;
+        break;
+      case 'stepGoal':
+        message = `Step goal updated to ${value.toLocaleString()} steps per day`;
+        break;
+      case 'waterReminders':
+        message = `Water reminders ${value ? 'enabled' : 'disabled'}`;
+        break;
+      case 'breakReminders':
+        message = `Break reminders ${value ? 'enabled' : 'disabled'}`;
+        break;
+      case 'sleepReminders':
+        message = `Sleep reminders ${value ? 'enabled' : 'disabled'}`;
+        break;
+      case 'darkMode':
+        message = `Dark mode ${value ? 'enabled' : 'disabled'}`;
+        break;
+      case 'syncEnabled':
+        message = `Auto-sync ${value ? 'enabled' : 'disabled'}`;
+        break;
+      default:
+        message = 'Setting updated successfully';
+    }
+    
+    Alert.alert(
+      'Setting Updated',
+      message,
+      [{ text: 'OK', style: 'default' }],
+      { cancelable: true }
+    );
+  };
+
   const updateSetting = async <K extends keyof UserSettings>(
     key: K, 
     value: UserSettings[K], 
@@ -311,24 +350,94 @@ export default function SettingsScreen() {
       // Update settings in AsyncStorage
       const updatedSettings = { ...settings, [key]: value };
       await saveSettings(updatedSettings);
+      
+      // Show alert notification
+      showSettingUpdateAlert(key, value);
     } catch (error) {
-      Alert.alert('Error', 'Failed to save settings');
+      Alert.alert(
+        'Error',
+        'Failed to save settings',
+        [{ text: 'OK', style: 'default' }],
+        { cancelable: true }
+      );
       console.error(error);
     }
   };
 
   const handleSignOut = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
-      { text: 'Cancel', style: 'cancel' },
-      { 
-        text: 'Sign Out', 
-        style: 'destructive',
-        onPress: () => {
-          Alert.alert('Signed Out', 'You have been signed out successfully.');
+    Alert.alert(
+      'Sign Out',
+      'Are you sure you want to sign out?',
+      [
+        { 
+          text: 'Cancel',
+          style: 'cancel'
+        },
+        { 
+          text: 'Sign Out',
+          style: 'destructive',
+          onPress: () => {
+            Alert.alert(
+              'Success',
+              'You have been signed out successfully.',
+              [{ text: 'OK', style: 'default' }],
+              { cancelable: true }
+            );
+          }
         }
-      }
-    ]);
+      ],
+      { cancelable: true }
+    );
+  };
+
+  const sendTestNotification = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    
+    // First show a confirmation
+    Alert.alert(
+      'Send Test Notification?',
+      'This will simulate a notification to test the notification system.',
+      [
+        { 
+          text: 'Cancel',
+          style: 'cancel'
+        },
+        {
+          text: 'Send',
+          style: 'default',
+          onPress: () => {
+            // Wait a short moment before showing the "notification"
+            setTimeout(() => {
+              Alert.alert(
+                '🔔 Test Notification',
+                'This is a test notification from HackOClock. If you see this, the notification system is working!',
+                [
+                  {
+                    text: 'Dismiss',
+                    style: 'cancel'
+                  },
+                  {
+                    text: 'Open App',
+                    style: 'default',
+                    onPress: () => {
+                      Alert.alert(
+                        'Success',
+                        'Notification interaction successful! In a real notification, this would open the relevant screen.',
+                        [{ text: 'OK', style: 'default' }],
+                        { cancelable: true }
+                      );
+                    }
+                  }
+                ],
+                { cancelable: true }
+              );
+            }, 1000); // 1 second delay to simulate notification delivery
+          }
+        }
+      ],
+      { cancelable: true }
+    );
   };
 
   return (
@@ -426,6 +535,24 @@ export default function SettingsScreen() {
                 </View>
               </View>
               <IconSymbol size={18} name="chevron.right" color={Colors[colorScheme].text} />
+            </Pressable>
+
+            <View style={[styles.divider, { backgroundColor: dividerColor }]} />
+
+            <Pressable 
+              style={[styles.settingRow, styles.pressableRow]}
+              onPress={sendTestNotification}
+            >
+              <View style={styles.settingInfo}>
+                <View style={[styles.iconContainer, { backgroundColor: 'rgba(255, 149, 0, 0.1)' }]}>
+                  <IconSymbol size={20} name="bell.badge.fill" color="#FF9500" />
+                </View>
+                <View>
+                  <ThemedText style={styles.settingLabel}>Test Notifications</ThemedText>
+                  <ThemedText style={styles.settingDescription}>Send a test notification</ThemedText>
+                </View>
+              </View>
+              <IconSymbol size={18} name="paperplane.fill" color="#FF9500" />
             </Pressable>
 
             <View style={[styles.divider, { backgroundColor: dividerColor }]} />
@@ -578,7 +705,10 @@ export default function SettingsScreen() {
       <OptionModal
         visible={activeModal === 'water'}
         onClose={() => setActiveModal(null)}
-        onSelect={(value) => updateSetting('waterGoal', value, setWaterGoal)}
+        onSelect={(value) => {
+          updateSetting('waterGoal', value, setWaterGoal);
+          setActiveModal(null);
+        }}
         options={waterOptions}
         selectedValue={waterGoal}
         title="Water Goal"
@@ -588,7 +718,10 @@ export default function SettingsScreen() {
       <OptionModal
         visible={activeModal === 'sleep'}
         onClose={() => setActiveModal(null)}
-        onSelect={(value) => updateSetting('sleepGoal', value, setSleepGoal)}
+        onSelect={(value) => {
+          updateSetting('sleepGoal', value, setSleepGoal);
+          setActiveModal(null);
+        }}
         options={sleepOptions}
         selectedValue={sleepGoal}
         title="Sleep Goal"
@@ -598,7 +731,10 @@ export default function SettingsScreen() {
       <OptionModal
         visible={activeModal === 'steps'}
         onClose={() => setActiveModal(null)}
-        onSelect={(value) => updateSetting('stepGoal', value, setStepGoal)}
+        onSelect={(value) => {
+          updateSetting('stepGoal', value, setStepGoal);
+          setActiveModal(null);
+        }}
         options={stepOptions}
         selectedValue={stepGoal}
         title="Step Goal"

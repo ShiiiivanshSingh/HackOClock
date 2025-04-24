@@ -1,5 +1,39 @@
+apply plugin: "com.android.application"
+apply plugin: "kotlin-android"
+
 dependencies {
     implementation "androidx.health.connect:connect-client:1.1.0-alpha02"
     implementation "androidx.concurrent:concurrent-futures:1.1.0"
     implementation "com.google.guava:guava:31.1-android"
+    implementation "com.google.android.gms:play-services-base:18.2.0"
+    implementation "androidx.core:core-ktx:1.10.1"
+}
+
+android {
+    compileSdkVersion rootProject.ext.compileSdkVersion
+
+    defaultConfig {
+        applicationId "com.hackoclock"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+        }
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+
+repositories {
+    google()
+    mavenCentral()
+    maven { url "https://androidx.dev/snapshots/builds/8938977/artifacts/repository" }
 } 

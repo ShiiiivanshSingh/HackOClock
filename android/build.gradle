@@ -1,0 +1,27 @@
+buildscript {
+    ext {
+        buildToolsVersion = "33.0.0"
+        minSdkVersion = 26
+        compileSdkVersion = 33
+        targetSdkVersion = 33
+        ndkVersion = "23.1.7779620"
+        kotlinVersion = "1.8.0"
+    }
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath("com.android.tools.build:gradle:7.4.2")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url "https://androidx.dev/snapshots/builds/8938977/artifacts/repository" }
+        maven { url "https://www.jitpack.io" }
+    }
+} 
