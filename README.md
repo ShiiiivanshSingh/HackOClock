@@ -50,6 +50,8 @@ npm run ios
 npm run android
 ```
 
+
+
 ## Development Roadmap
 
 - [ ] Implement Firebase Authentication
