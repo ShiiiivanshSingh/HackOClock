@@ -1,7 +1,7 @@
 <a name="readme-top"></a>
 
 <div align="center">
-  <h1>Daily Wellness Tracker 🌟</h1>
+  <h1>EasyFit 🌟</h1>
   
   <p>Your personal companion for holistic health and wellness tracking</p>
 
@@ -27,11 +27,23 @@
 <a name="overview"></a>
 ## 🌈 Overview
 
-Welcome to Daily Wellness Tracker! This comprehensive mobile application is designed to help you take control of your wellness journey. By combining cutting-edge technology with user-friendly design, we provide a seamless experience for tracking various aspects of your daily health and wellness routines.
+Welcome to EasyFit! This comprehensive mobile application is designed to help you take control of your wellness journey. By combining cutting-edge technology with user-friendly design, we provide a seamless experience for tracking various aspects of your daily health and wellness routines.
 
 <a name="mission"></a>
 ### 🎯 Mission
-Our mission is to empower users to make informed decisions about their health by providing detailed insights into their daily wellness metrics. Whether you're focusing on better hydration, improved sleep patterns, or consistent exercise routines, Daily Wellness Tracker is your companion on this journey.
+Our mission is to empower users to make informed decisions about their health by providing detailed insights into their daily wellness metrics. Whether you're focusing on better hydration, improved sleep patterns, or consistent exercise routines, EasyFit is your companion on this journey.
+
+
+<a name="tech-stack"></a>
+## ⚡ Tech Stack
+
+<div align="center">
+  <img src="https://img.shields.io/badge/React_Native-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React Native">
+  <img src="https://img.shields.io/badge/Expo-000020?style=for-the-badge&logo=expo&logoColor=white" alt="Expo">
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript">
+  <img src="https://img.shields.io/badge/Health_Connect-4CAF50?style=for-the-badge&logo=android&logoColor=white" alt="Health Connect">
+</div>
+
 
 <a name="key-features"></a>
 ## ✨ Key Features
@@ -89,15 +101,7 @@ Our mission is to empower users to make informed decisions about their health by
 * Activity-based prompts
 * Progress celebrations
 
-<a name="tech-stack"></a>
-## ⚡ Tech Stack
 
-<div align="center">
-  <img src="https://img.shields.io/badge/React_Native-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React Native">
-  <img src="https://img.shields.io/badge/Expo-000020?style=for-the-badge&logo=expo&logoColor=white" alt="Expo">
-  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript">
-  <img src="https://img.shields.io/badge/Health_Connect-4CAF50?style=for-the-badge&logo=android&logoColor=white" alt="Health Connect">
-</div>
 
 <a name="architecture"></a>
 ### Frontend Architecture
@@ -122,8 +126,8 @@ Our mission is to empower users to make informed decisions about their health by
 
 <a name="screenshots"></a>
 ## 📱 Screenshots
-
-![App Screenshots](./screenshots.png)
+ coming sooon
+<!-- ![App Screenshots](./screenshots.png) -->
 
 <a name="getting-started"></a>
 ## 🚀 Getting Started
