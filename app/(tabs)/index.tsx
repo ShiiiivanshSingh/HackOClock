@@ -10,6 +10,7 @@ import Colors from '@/constants/Colors';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useAsyncStorage } from '@/hooks/useAsyncStorage';
 import { format } from 'date-fns';
+import { useMockData } from '@/hooks/useMockData';
 
 type StressLevel = 'Low' | 'Medium' | 'High';
 type LogEntry = {
@@ -29,17 +30,14 @@ export default function Dashboard() {
   const { value: savedEntries, loading } = useAsyncStorage<LogEntry[]>('log-entries', []);
   
   const [greeting, setGreeting] = useState("Today");
-  const [waterIntake, setWaterIntake] = useState(0);
-  const waterGoal = 3000;
-  
-  const [sleepHours, setSleepHours] = useState(0);
-  const sleepGoal = "8-9 hours";
-  
-  const [steps, setSteps] = useState(0);
-  const stepsGoal = 10000;
-  
-  const [stress, setStress] = useState<StressLevel>("Medium");
   const [lastSynced, setLastSynced] = useState("Never");
+
+  // Use mock data that changes every second
+  const mockData = useMockData();
+  
+  const waterGoal = 3000;
+  const sleepGoal = "8-9 hours";
+  const stepsGoal = 10000;
 
   useEffect(() => {
     if (!loading) {
@@ -51,14 +49,8 @@ export default function Dashboard() {
     const todayEntry = savedEntries.find(entry => entry.date === today);
     
     if (todayEntry) {
-      setWaterIntake(todayEntry.waterAmount);
-      
-      const stressMap: StressLevel[] = ['Low', 'Low', 'Medium', 'High', 'High'];
-      setStress(stressMap[todayEntry.stressLevel] || 'Medium');
+      // Use saved entry data if available
     }
-    
-    setSleepHours(Math.round((Math.random() * 2) + 6.5) * 10 / 10);
-    setSteps(Math.floor(Math.random() * 5000) + 4000);
     
     if (savedEntries.length > 0) {
       setLastSynced('Just now');
@@ -88,10 +80,16 @@ export default function Dashboard() {
       default: return '😐';
     }
   };
+  
+  const getStressLevel = (value: number): StressLevel => {
+    if (value < 2) return 'Low';
+    if (value < 3) return 'Medium';
+    return 'High';
+  };
 
-  const waterPercentage = Math.min(Math.round((waterIntake / waterGoal) * 100), 100);
-  const sleepPercentage = Math.min(Math.round((sleepHours / 9) * 100), 100);
-  const stepsPercentage = Math.min(Math.round((steps / stepsGoal) * 100), 100);
+  const waterPercentage = Math.min(Math.round((mockData.waterIntake / waterGoal) * 100), 100);
+  const sleepPercentage = Math.min(Math.round((mockData.sleepHours / 9) * 100), 100);
+  const stepsPercentage = Math.min(Math.round((mockData.steps / stepsGoal) * 100), 100);
 
   const renderWaterProgress = () => {
     const size = isSmallScreen ? 90 : 100;
@@ -138,10 +136,10 @@ export default function Dashboard() {
             styles.cardValue,
             { fontSize: isSmallScreen ? 22 : 26 }
           ]}>
-            {waterIntake}
+            {mockData.waterIntake}
           </ThemedText>
           <ThemedText style={styles.mlText}>
-            ml remaining
+            ml
           </ThemedText>
         </View>
       </View>
@@ -193,8 +191,8 @@ export default function Dashboard() {
               
               <View style={styles.statRow}>
                 <IconSymbol name="drop.fill" size={20} color="#2196F3" />
-                <ThemedText style={styles.statLabel}>Consumed:</ThemedText>
-                <ThemedText style={styles.statValue}>{waterGoal - waterIntake} ml</ThemedText>
+                <ThemedText style={styles.statLabel}>Today:</ThemedText>
+                <ThemedText style={styles.statValue}>{waterGoal - mockData.waterIntake} ml</ThemedText>
               </View>
             </View>
           </View>
@@ -210,7 +208,7 @@ export default function Dashboard() {
             <ThemedText style={styles.metricTitle}>Steps</ThemedText>
             <View style={styles.metricContent}>
               <IconSymbol name="figure.walk" size={24} color="#4CAF50" />
-              <ThemedText style={styles.metricValue}>{steps.toLocaleString()}</ThemedText>
+              <ThemedText style={styles.metricValue}>{mockData.steps.toLocaleString()}</ThemedText>
             </View>
             <View style={styles.progressBar}>
               <View style={[styles.progressFill, { width: `${stepsPercentage}%`, backgroundColor: '#4CAF50' }]} />
@@ -226,7 +224,7 @@ export default function Dashboard() {
             <ThemedText style={styles.metricTitle}>Sleep</ThemedText>
             <View style={styles.metricContent}>
               <IconSymbol name="moon.stars.fill" size={24} color="#9C27B0" />
-              <ThemedText style={styles.metricValue}>{sleepHours} hr</ThemedText>
+              <ThemedText style={styles.metricValue}>{mockData.sleepHours} hr</ThemedText>
             </View>
             <View style={styles.progressBar}>
               <View style={[styles.progressFill, { width: `${sleepPercentage}%`, backgroundColor: '#9C27B0' }]} />
@@ -244,37 +242,36 @@ export default function Dashboard() {
             <ThemedText style={styles.moodTitle}>Current Mood</ThemedText>
             <IconSymbol name="plus" size={20} color="#2196F3" />
           </View>
-          <View style={styles.moodContent}>
-            <ThemedText style={styles.moodEmoji}>{getStressEmoji(stress)}</ThemedText>
-            <ThemedText style={styles.moodLabel}>{stress}</ThemedText>
+          <View style={[styles.moodContent, { paddingVertical: 12, paddingHorizontal: 16 }]}>
+            <ThemedText style={[styles.moodEmoji, { paddingVertical: 12, paddingHorizontal: 16 }]}>{getStressEmoji(getStressLevel(mockData.stressLevel))}</ThemedText>
+            <ThemedText style={styles.moodLabel}>{getStressLevel(mockData.stressLevel)}</ThemedText>
           </View>
-        </Pressable>
-        
-        {/* Google Fit Integration */}
-        <Pressable 
-          style={[styles.syncCard, { backgroundColor: colorScheme === 'dark' ? '#1c1c1e' : '#fff' }]}
-          onPress={syncData}
-        >
-          <View style={styles.syncContent}>
-            <IconSymbol name="arrow.triangle.2.circlepath" size={20} color="#2196F3" />
-            <View style={styles.syncTextContent}>
-              <ThemedText style={styles.syncTitle}>Sync with Google Fit</ThemedText>
-              <ThemedText style={styles.syncSubtitle}>Last synced: {lastSynced}</ThemedText>
-            </View>
-          </View>
-          <ThemedText style={styles.syncButton}>Sync</ThemedText>
         </Pressable>
 
-        {/* Quick Log Button */}
+        {/* Heart Rate Card */}
         <Pressable 
-          style={styles.logButtonContainer}
-          onPress={() => handleNavigation('log')}
+          style={[styles.heartCard, { backgroundColor: colorScheme === 'dark' ? '#1c1c1e' : '#fff' }]}
+          onPress={() => handleNavigation('insights')}
         >
-          <View style={styles.logButton}>
-            <IconSymbol name="plus" size={22} color="#fff" />
-            <ThemedText style={styles.logButtonText}>Quick Log</ThemedText>
+          <View style={styles.heartCardContent}>
+            <View>
+              <ThemedText style={styles.heartTitle}>Heart Rate</ThemedText>
+              <ThemedText style={styles.bpmValue}>{mockData.heartRate} BPM</ThemedText>
+            </View>
+            <IconSymbol name="heart.fill" size={32} color="#FF5252" />
           </View>
         </Pressable>
+
+        {/* Sync Section */}
+        <View style={styles.syncSection}>
+          <ThemedText style={styles.lastSyncedText}>Last synced: {lastSynced}</ThemedText>
+          <Pressable 
+            style={styles.syncButton}
+            onPress={syncData}
+          >
+            <ThemedText style={styles.syncButtonText}>Sync Now</ThemedText>
+          </Pressable>
+        </View>
       </ScrollView>
     </View>
   );
@@ -468,60 +465,47 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '500',
   },
-  syncCard: {
+  heartCard: {
     borderRadius: 16,
-    padding: 16,
-    marginBottom: 24,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    marginBottom: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 1,
   },
-  syncContent: {
+  heartCardContent: {
+    padding: 16,
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
-  syncTextContent: {
-    marginLeft: 12,
-  },
-  syncTitle: {
+  heartTitle: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
   },
-  syncSubtitle: {
+  bpmValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  syncSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+  },
+  lastSyncedText: {
     fontSize: 12,
     opacity: 0.7,
   },
   syncButton: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#2196F3',
-  },
-  logButtonContainer: {
-    alignItems: 'center',
-  },
-  logButton: {
     backgroundColor: '#2196F3',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
+    padding: 12,
     borderRadius: 24,
-    shadowColor: "#2196F3",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
   },
-  logButtonText: {
+  syncButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
-    marginLeft: 8,
   },
 });

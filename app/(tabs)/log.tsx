@@ -124,10 +124,10 @@ export default function LogScreen() {
         <View style={[styles.mainCard, { backgroundColor: colorScheme === 'dark' ? '#1c1c1e' : '#fff' }]}>
           <View style={styles.progressSection}>
             {renderCircularProgress(66, '#4CAF50', 
-              <View style={styles.innerProgressContent}>
-                <ThemedText style={styles.progressPercent}>66</ThemedText>
-                <ThemedText style={styles.progressSubtext}>{stepsToday}</ThemedText>
-              </View>
+              <View style={[styles.innerProgressContent, { backgroundColor: colorScheme === 'dark' ? '#1c1c1e' : '#fff' }]}>
+               <ThemedText style={[styles.progressPercent, { color: '#4CAF50', fontSize: 30, padding: 17 }]}>66%</ThemedText>
+                <ThemedText style={[styles.progressSubtext, { color: '#666', fontSize: 14, padding: 2 }]}>{stepsToday}</ThemedText>
+               </View>
             )}
           </View>
 
