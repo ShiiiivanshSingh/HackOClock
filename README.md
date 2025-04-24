@@ -17,7 +17,7 @@
   
   <p align="center">
     <a href="#-key-features">✨ Features</a> &nbsp;&nbsp;•&nbsp;&nbsp;
-    <a href="#%EF%B8%8F-tech-stack">⚡ Tech Stack</a> &nbsp;&nbsp;•&nbsp;&nbsp;
+    <a href="#-tech-stack">⚡ Tech Stack</a> &nbsp;&nbsp;•&nbsp;&nbsp;
     <a href="#-getting-started">🚀 Getting Started</a> &nbsp;&nbsp;•&nbsp;&nbsp;
     <a href="#-contributing">🤝 Contributing</a>
   </p>
