@@ -1,7 +1,14 @@
 import { useState, useEffect } from 'react';
 import { NativeModules, Platform } from 'react-native';
+import { format } from 'date-fns';
 
 const { HealthConnect } = NativeModules;
+
+type LogEntry = {
+  date: string;
+  waterAmount: number;
+  stressLevel: number;
+};
 
 type HealthData = {
   waterIntake: number;
@@ -43,7 +50,7 @@ const defaultHealthData: HealthData = {
   morningWalkCalories: 0
 };
 
-export const useHealthConnect = () => {
+export const useHealthConnect = (logEntries: LogEntry[] = []) => {
   const [healthData, setHealthData] = useState<HealthData>(defaultHealthData);
   const [isInitialized, setIsInitialized] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -53,25 +60,56 @@ export const useHealthConnect = () => {
       initializeHealthConnect();
     } else {
       setError('Health Connect is only available on Android devices');
+      // On non-Android platforms, use log entries as fallback data
+      updateHealthDataWithLogEntries();
     }
   }, []);
+
+  // Update health data whenever log entries change
+  useEffect(() => {
+    updateHealthDataWithLogEntries();
+  }, [logEntries]);
+
+  const updateHealthDataWithLogEntries = () => {
+    if (!logEntries || logEntries.length === 0) return;
+    
+    const today = format(new Date(), 'yyyy-MM-dd');
+    const todayEntry = logEntries.find(entry => entry.date === today);
+    
+    if (todayEntry) {
+      // Ensure waterAmount is a valid number
+      const waterAmount = typeof todayEntry.waterAmount === 'number' 
+        ? todayEntry.waterAmount 
+        : parseInt(String(todayEntry.waterAmount), 10) || 0;
+      
+      setHealthData(prevData => ({
+        ...prevData,
+        waterIntake: waterAmount,
+        stressLevel: todayEntry.stressLevel || 0,
+        waterIntakeCups: Math.round(waterAmount / 250)
+      }));
+    }
+  };
 
   const initializeHealthConnect = async () => {
     try {
       if (!HealthConnect) {
         setError('Health Connect module is not available');
+        updateHealthDataWithLogEntries();
         return;
       }
 
       const isAvailable = await HealthConnect.checkAvailability();
       if (!isAvailable) {
         setError('Health Connect is not available on this device');
+        updateHealthDataWithLogEntries();
         return;
       }
 
       const hasPermissions = await HealthConnect.requestPermissions();
       if (!hasPermissions) {
         setError('Health Connect permissions not granted');
+        updateHealthDataWithLogEntries();
         return;
       }
 
@@ -79,7 +117,7 @@ export const useHealthConnect = () => {
       await fetchHealthData();
     } catch (err) {
       setError('Failed to initialize Health Connect');
-      console.error(err);
+      updateHealthDataWithLogEntries();
     }
   };
 
@@ -90,21 +128,36 @@ export const useHealthConnect = () => {
 
     try {
       const data = await HealthConnect.getHealthData();
-      setHealthData(prevData => ({
-        ...prevData,
-        ...data,
-        sleepDuration: `${Math.floor(data.sleepHours)}h ${Math.round((data.sleepHours % 1) * 60)}m`,
-        waterIntakeCups: Math.round(data.waterIntake / 250) // Assuming 250ml per cup
-      }));
+      setHealthData(prevData => {
+        const updatedData = {
+          ...prevData,
+          ...data,
+          sleepDuration: `${Math.floor(data.sleepHours)}h ${Math.round((data.sleepHours % 1) * 60)}m`,
+          waterIntakeCups: Math.round(data.waterIntake / 250) // Assuming 250ml per cup
+        };
+        
+        // Supplement with log entry data (prioritizing log entries)
+        const today = format(new Date(), 'yyyy-MM-dd');
+        const todayEntry = logEntries.find(entry => entry.date === today);
+        
+        if (todayEntry) {
+          updatedData.waterIntake = todayEntry.waterAmount;
+          updatedData.waterIntakeCups = Math.round(todayEntry.waterAmount / 250);
+          updatedData.stressLevel = todayEntry.stressLevel;
+        }
+        
+        return updatedData;
+      });
     } catch (err) {
       setError('Failed to fetch health data');
-      console.error(err);
+      updateHealthDataWithLogEntries();
     }
   };
 
   const syncData = async () => {
     if (!HealthConnect) {
       setError('Health Connect module is not available');
+      updateHealthDataWithLogEntries();
       return;
     }
 

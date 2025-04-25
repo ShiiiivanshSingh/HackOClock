@@ -1,4 +1,4 @@
-import { StyleSheet, View, ScrollView, Pressable, Alert, SafeAreaView, StatusBar, Platform } from 'react-native';
+import { StyleSheet, View, ScrollView, Pressable, Alert, SafeAreaView, StatusBar, Platform, TextInput } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -7,8 +7,10 @@ import Colors from '@/constants/Colors';
 import * as Haptics from 'expo-haptics';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useAsyncStorage } from '@/hooks/useAsyncStorage';
-import { format } from 'date-fns';
-import { Stack } from 'expo-router';
+import { format, parse, isEqual } from 'date-fns';
+import { Stack, useRouter } from 'expo-router';
+import { useHealthConnect } from '@/hooks/useHealthConnect';
+import { DropdownSelect } from '@/components/DropdownSelect';
 
 type LogEntry = {
   date: string;
@@ -16,39 +18,122 @@ type LogEntry = {
   stressLevel: number;
 };
 
+// Mock data for today with minimal values
+const today = new Date();
+const MOCK_DATE = format(today, 'yyyy-MM-dd');
+const MOCK_DATA: LogEntry[] = [
+  {
+    date: MOCK_DATE,
+    waterAmount: 250, // Very low water intake
+    stressLevel: 3 // Moderate stress
+  }
+];
+
 export default function LogScreen() {
   const colorScheme = useColorScheme() || 'light';
-  const today = format(new Date(), 'yyyy-MM-dd');
+  const router = useRouter();
   
-  const { value: savedEntries, setValue: setSavedEntries, loading } = useAsyncStorage<LogEntry[]>('log-entries', []);
+  const { value: savedEntries, setValue: setSavedEntries, refreshValue: refreshEntries, loading } = useAsyncStorage<LogEntry[]>('log-entries', MOCK_DATA);
+  const { healthData, syncData } = useHealthConnect(savedEntries);
+
   const [waterAmount, setWaterAmount] = useState(0);
   const [stressLevel, setStressLevel] = useState(2);
   const [isSaving, setIsSaving] = useState(false);
-  const [stepsToday, setStepsToday] = useState(Math.floor(Math.random() * 5000) + 1000);
-  const [caloriesBurned, setCaloriesBurned] = useState(Math.floor(Math.random() * 500) + 200);
-  const [minutesActive, setMinutesActive] = useState(Math.floor(Math.random() * 60) + 10);
+  
+  // Mock fixed data for today
+  const [stepsToday, setStepsToday] = useState(1245); // Very few steps
+  const [caloriesBurned, setCaloriesBurned] = useState(98); // Very few calories
+  const [minutesActive, setMinutesActive] = useState(15); // Very few minutes
+
+  // Initialize with mock data on first load
+  useEffect(() => {
+    const initializeMockData = async () => {
+      if (savedEntries.length === 0) {
+        await setSavedEntries(MOCK_DATA);
+        await refreshEntries();
+      } else {
+        // Clear any entries that aren't for today
+        const filteredEntries = savedEntries.filter(entry => entry.date === MOCK_DATE);
+        
+        // If we don't have our mock entry, add it
+        if (filteredEntries.length === 0) {
+          await setSavedEntries(MOCK_DATA);
+        } else if (filteredEntries.length !== savedEntries.length) {
+          // If we have other entries, remove them
+          await setSavedEntries(filteredEntries);
+        }
+        
+        await refreshEntries();
+      }
+    };
+    
+    if (!loading) {
+      initializeMockData();
+    }
+  }, [loading]);
 
   useEffect(() => {
     if (!loading) {
       // Check if there's an entry for today already
-      const todayEntry = savedEntries.find(entry => entry.date === today);
+      const todayEntry = savedEntries.find(entry => entry.date === MOCK_DATE);
       if (todayEntry) {
-        setWaterAmount(todayEntry.waterAmount);
+        // Ensure water amount is a valid number
+        const validWaterAmount = isNaN(todayEntry.waterAmount) ? 0 : todayEntry.waterAmount;
+        setWaterAmount(validWaterAmount);
         setStressLevel(todayEntry.stressLevel);
+      } else {
+        // Set mock data for today
+        const mockEntry = MOCK_DATA[0];
+        setWaterAmount(mockEntry.waterAmount);
+        setStressLevel(mockEntry.stressLevel);
       }
     }
-  }, [loading, savedEntries, today]);
+  }, [loading, savedEntries]);
 
   const stressEmojis = ['😌', '😊', '😐', '😟', '😫'];
   const moodLabels = ['Very relaxed', 'Relaxed', 'Neutral', 'Stressed', 'Very stressed'];
   
+  // Options for the dropdowns
+  const waterOptions = [
+    { label: 'No water', value: 0, icon: 'drop.slash' },
+    { label: '250ml', value: 250, icon: 'drop' },
+    { label: '500ml', value: 500, icon: 'drop' },
+    { label: '750ml', value: 750, icon: 'drop' },
+    { label: '1000ml', value: 1000, icon: 'drop.fill' },
+    { label: '1500ml', value: 1500, icon: 'drop.fill' },
+    { label: '2000ml', value: 2000, icon: 'drop.fill' },
+  ];
+
+  const moodOptions = stressEmojis.map((emoji, index) => ({
+    label: moodLabels[index],
+    value: index,
+    emoji: emoji
+  }));
+  
   const handleWaterChange = (amount: number) => {
-    setWaterAmount(amount);
+    try {
+      // Ensure amount is a valid number and not less than 0
+      const newAmount = isNaN(amount) ? 0 : Math.max(0, amount);
+      
+      // Update both the numeric state
+      setWaterAmount(newAmount);
+      
+      // Provide haptic feedback for better user experience
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    } catch (error) {
+      console.error('Error in handleWaterChange:', error);
+      Alert.alert('Error', 'There was an error updating your water amount');
+    }
   };
 
   const handleStressSelect = (level: number) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setStressLevel(level);
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      setStressLevel(level);
+    } catch (error) {
+      console.error('Error in handleStressSelect:', error);
+      Alert.alert('Error', 'There was an error updating your mood selection');
+    }
   };
 
   const saveEntry = async () => {
@@ -56,8 +141,15 @@ export default function LogScreen() {
       setIsSaving(true);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       
-      const existingEntryIndex = savedEntries.findIndex(entry => entry.date === today);
-      const newEntry = { date: today, waterAmount, stressLevel };
+      // Ensure waterAmount is a valid number
+      const numericWaterAmount = isNaN(waterAmount) ? 0 : parseInt(String(waterAmount), 10);
+      
+      const existingEntryIndex = savedEntries.findIndex(entry => entry.date === MOCK_DATE);
+      const newEntry = { 
+        date: MOCK_DATE, 
+        waterAmount: numericWaterAmount, 
+        stressLevel 
+      };
       
       let updatedEntries;
       if (existingEntryIndex >= 0) {
@@ -67,11 +159,28 @@ export default function LogScreen() {
         updatedEntries = [...savedEntries, newEntry];
       }
       
-      await setSavedEntries(updatedEntries);
-      Alert.alert('Success', 'Your entry has been saved');
+      // Filter to keep only entries for today
+      updatedEntries = updatedEntries.filter(entry => entry.date === MOCK_DATE);
+      
+      try {
+        // Save to storage first
+        await setSavedEntries(updatedEntries);
+        
+        // Refresh entries to ensure latest data
+        await refreshEntries();
+        
+        // Alert without blocking the UI
+        Alert.alert('Success', 'Your entry has been saved');
+        
+        // Navigate back to home page to see changes
+        router.replace('/(tabs)');
+      } catch (saveError) {
+        console.error('Error saving entry:', saveError);
+        Alert.alert('Error', 'Failed to save your entry');
+      }
     } catch (error) {
+      console.error('Error in saveEntry:', error);
       Alert.alert('Error', 'Failed to save your entry');
-      console.error(error);
     } finally {
       setIsSaving(false);
     }
@@ -98,13 +207,15 @@ export default function LogScreen() {
   };
 
   const getDayOfWeek = () => {
-    const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-    return days[new Date().getDay()];
+    return ['S', 'M', 'T', 'W', 'T', 'F', 'S'][new Date().getDay()];
   };
 
   // Calculate how many days this week had activities logged
-  const daysLoggedThisWeek = Math.min(new Date().getDay() + 1, 5);  // Sample data
-
+  const daysLoggedThisWeek = 1; // Only today
+  
+  // Get today's date string for comparison
+  const todayDateStr = format(new Date(), 'yyyy-MM-dd');
+  
   return (
     <View style={{ flex: 1, backgroundColor: colorScheme === 'dark' ? '#000' : '#f6f6f6' }}>
       <StatusBar barStyle={colorScheme === 'dark' ? 'light-content' : 'dark-content'} />
@@ -114,7 +225,9 @@ export default function LogScreen() {
       
       <ScrollView contentContainerStyle={styles.contentContainer}>
         <View style={styles.header}>
-          <ThemedText style={styles.title}>Today</ThemedText>
+          <ThemedText style={styles.title}>
+            Today
+          </ThemedText>
           <View style={styles.userIcon}>
             <ThemedText style={styles.userInitial}>J</ThemedText>
           </View>
@@ -125,7 +238,7 @@ export default function LogScreen() {
           <View style={styles.progressSection}>
             {renderCircularProgress(66, '#4CAF50', 
               <View style={[styles.innerProgressContent, { backgroundColor: colorScheme === 'dark' ? '#1c1c1e' : '#fff' }]}>
-               <ThemedText style={[styles.progressPercent, { color: '#4CAF50', fontSize: 30, padding: 17 }]}>66%</ThemedText>
+               <ThemedText style={[styles.progressPercent, { color: '#4CAF50', fontSize: 30, padding: 17 }]}>12%</ThemedText>
                 <ThemedText style={[styles.progressSubtext, { color: '#666', fontSize: 14, padding: 2 }]}>{stepsToday}</ThemedText>
                </View>
             )}
@@ -191,21 +304,26 @@ export default function LogScreen() {
                   <ThemedText style={styles.weeklySubtext}>Achieved</ThemedText>
                 </View>
                 
-                <View style={styles.weekDays}>
+                <View style={styles.weekProgress}>
                   {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
-                    <View 
-                      key={index} 
-                      style={[
+                    <View key={index} style={styles.dayContainer}>
+                      <View style={[
                         styles.dayCircle,
-                        { backgroundColor: index < daysLoggedThisWeek ? '#4CAF50' : 'transparent' }
-                      ]}
-                    >
-                      <ThemedText style={[
-                        styles.dayText, 
-                        index < daysLoggedThisWeek && { color: '#fff' }
+                        { 
+                          backgroundColor: (todayDateStr === MOCK_DATE && index <= 4) || 
+                                         (todayDateStr !== MOCK_DATE && index < daysLoggedThisWeek) 
+                            ? '#4CAF50' 
+                            : 'transparent'
+                        }
                       ]}>
-                        {day}
-                      </ThemedText>
+                        <ThemedText style={[
+                          styles.dayText, 
+                          ((todayDateStr === MOCK_DATE && index <= 4) || 
+                           (todayDateStr !== MOCK_DATE && index < daysLoggedThisWeek)) && { color: '#fff' }
+                        ]}>
+                          {day}
+                        </ThemedText>
+                      </View>
                     </View>
                   ))}
                 </View>
@@ -218,55 +336,46 @@ export default function LogScreen() {
 
         {/* Water & Mood Tracking */}
         <View style={[styles.actionCard, { backgroundColor: colorScheme === 'dark' ? '#1c1c1e' : '#fff' }]}>
-          <ThemedText style={styles.sectionTitle}>Log for today</ThemedText>
+          <ThemedText style={styles.sectionTitle}>
+            Log for Today
+          </ThemedText>
           
           <View style={styles.inputSection}>
             <ThemedText style={styles.inputLabel}>Water Intake</ThemedText>
-            <View style={styles.waterInput}>
-              <Pressable 
-                style={styles.waterButton}
-                onPress={() => handleWaterChange(Math.max(0, waterAmount - 250))}
-              >
-                <IconSymbol name="minus" size={18} color="#4CAF50" />
-              </Pressable>
-              
-              <View style={styles.waterValue}>
-                <ThemedText style={styles.waterAmount}>{waterAmount}</ThemedText>
-                <ThemedText style={styles.waterUnit}>ml</ThemedText>
+            <DropdownSelect
+              options={waterOptions}
+              selectedValue={waterAmount}
+              onSelect={handleWaterChange}
+              title="Select Water Intake"
+              placeholder="Select water amount..."
+            />
+            
+            {/* Water amount summary */}
+            {waterAmount > 0 && (
+              <View style={styles.waterSummary}>
+                <IconSymbol name="drop.fill" size={20} color="#4CAF50" />
+                <ThemedText style={styles.waterSummaryText}>
+                  {waterAmount}ml ({(waterAmount / 250).toFixed(1)} cups)
+                </ThemedText>
               </View>
-              
-              <Pressable 
-                style={styles.waterButton}
-                onPress={() => handleWaterChange(waterAmount + 250)}
-              >
-                <IconSymbol name="plus" size={18} color="#4CAF50" />
-              </Pressable>
-            </View>
+            )}
           </View>
           
           <View style={styles.inputSection}>
             <ThemedText style={styles.inputLabel}>Mood</ThemedText>
-            <View style={styles.moodSelector}>
-              {stressEmojis.map((emoji, index) => (
-                <Pressable 
-                  key={index}
-                  onPress={() => handleStressSelect(index)}
-                  style={[
-                    styles.moodButton,
-                    stressLevel === index && styles.selectedMood,
-                  ]}
-                >
-                  <ThemedText style={styles.moodEmoji}>{emoji}</ThemedText>
-                </Pressable>
-              ))}
-            </View>
-            <ThemedText style={styles.moodLabel}>{moodLabels[stressLevel]}</ThemedText>
+            <DropdownSelect
+              options={moodOptions}
+              selectedValue={stressLevel}
+              onSelect={handleStressSelect}
+              title="Select Your Mood"
+              placeholder="How are you feeling?"
+            />
           </View>
         </View>
 
         {/* Save Button */}
         <Pressable 
-          style={styles.saveButton}
+          style={[styles.saveButton, isSaving ? styles.savingButton : null]}
           onPress={saveEntry}
           disabled={isSaving}
         >
@@ -278,7 +387,11 @@ export default function LogScreen() {
       
       {/* Floating Add Button */}
       <View style={styles.floatingButtonContainer}>
-        <Pressable style={styles.floatingButton}>
+        <Pressable style={styles.floatingButton} onPress={() => {
+          // Reset to default values
+          handleWaterChange(0);
+          handleStressSelect(2);
+        }}>
           <IconSymbol name="plus" size={24} color="#fff" />
         </Pressable>
       </View>
@@ -452,8 +565,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     opacity: 0.7,
   },
-  weekDays: {
+  weekProgress: {
     flexDirection: 'row',
+  },
+  dayContainer: {
+    marginHorizontal: 2,
   },
   dayCircle: {
     width: 24,
@@ -463,7 +579,6 @@ const styles = StyleSheet.create({
     borderColor: '#4CAF50',
     justifyContent: 'center',
     alignItems: 'center',
-    marginHorizontal: 2,
   },
   dayText: {
     fontSize: 10,
@@ -482,60 +597,19 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginBottom: 12,
   },
-  waterInput: {
+  waterSummary: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  waterButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    marginTop: 8,
+    padding: 8,
     backgroundColor: 'rgba(76, 175, 80, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderRadius: 8,
   },
-  waterValue: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    paddingHorizontal: 16,
-    minWidth: 120,
-    justifyContent: 'center',
-  },
-  waterAmount: {
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  waterUnit: {
-    fontSize: 16,
-    marginLeft: 4,
-    opacity: 0.7,
-  },
-  moodSelector: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 8,
-  },
-  moodButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(200, 200, 200, 0.2)',
-  },
-  selectedMood: {
-    backgroundColor: 'rgba(76, 175, 80, 0.2)',
-    borderWidth: 2,
-    borderColor: '#4CAF50',
-  },
-  moodEmoji: {
-    fontSize: 24,
-  },
-  moodLabel: {
-    textAlign: 'center',
-    fontSize: 14,
-    opacity: 0.8,
+  waterSummaryText: {
+    marginLeft: 8,
+    fontSize: 15,
+    color: '#4CAF50',
   },
   saveButton: {
     backgroundColor: '#4CAF50',
@@ -566,5 +640,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 5,
+  },
+  savingButton: {
+    backgroundColor: '#2E7D32',
+    opacity: 0.8,
   },
 }); 

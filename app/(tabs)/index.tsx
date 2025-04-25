@@ -19,6 +19,17 @@ type LogEntry = {
   stressLevel: number;
 };
 
+// Mock data for today with minimal values
+const today = new Date();
+const MOCK_DATE = format(today, 'yyyy-MM-dd');
+const MOCK_DATA: LogEntry[] = [
+  {
+    date: MOCK_DATE,
+    waterAmount: 250, // Very low water intake
+    stressLevel: 3 // Moderate stress
+  }
+];
+
 export default function Dashboard() {
   const { width } = useWindowDimensions();
   const isSmallScreen = width < 380;
@@ -26,14 +37,20 @@ export default function Dashboard() {
   
   const colorScheme = useColorScheme() || 'light';
   const router = useRouter();
-  const today = format(new Date(), 'yyyy-MM-dd');
-  const { value: savedEntries, loading } = useAsyncStorage<LogEntry[]>('log-entries', []);
+  const { value: savedEntries, refreshValue: refreshEntries, loading } = useAsyncStorage<LogEntry[]>('log-entries', MOCK_DATA);
   
   const [greeting, setGreeting] = useState("Today");
   const [lastSynced, setLastSynced] = useState("Never");
 
-  // Replace useMockData with useHealthConnect
-  const { healthData, isInitialized, error, syncData } = useHealthConnect();
+  // Mock health data for today with minimal values
+  const mockHealthData = {
+    waterIntake: 250,
+    sleepHours: 4.5,
+    steps: 1245,
+    caloriesBurned: 98,
+    stressLevel: 3,
+    heartRate: 72 // Added heart rate
+  };
   
   const waterGoal = 3000;
   const sleepGoal = "8-9 hours";
@@ -45,11 +62,26 @@ export default function Dashboard() {
     }
   }, [loading, savedEntries]);
 
+  // Initialize with mock data if no entries exist
+  useEffect(() => {
+    if (!loading && (!savedEntries || savedEntries.length === 0)) {
+      refreshEntries();
+    }
+  }, [loading, savedEntries]);
+
   const loadTodayData = () => {
-    const todayEntry = savedEntries.find(entry => entry.date === today);
+    const todayEntry = savedEntries.find(entry => entry.date === MOCK_DATE);
     
     if (todayEntry) {
-      // Use saved entry data if available
+      // Force update for water intake if needed
+      const savedWater = typeof todayEntry.waterAmount === 'number' 
+        ? todayEntry.waterAmount 
+        : parseInt(String(todayEntry.waterAmount), 10) || 0;
+      
+      if (savedWater !== mockHealthData.waterIntake) {
+        // Update mock data to match saved data
+        mockHealthData.waterIntake = savedWater;
+      }
     }
     
     if (savedEntries.length > 0) {
@@ -68,7 +100,7 @@ export default function Dashboard() {
 
   const handleSync = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    await syncData();
+    await refreshEntries();
     setLastSynced("Just now");
   };
 
@@ -87,9 +119,12 @@ export default function Dashboard() {
     return 'High';
   };
 
-  const waterPercentage = Math.min(Math.round((healthData.waterIntake / waterGoal) * 100), 100);
-  const sleepPercentage = Math.min(Math.round((healthData.sleepHours / 9) * 100), 100);
-  const stepsPercentage = Math.min(Math.round((healthData.steps / stepsGoal) * 100), 100);
+  // Ensure water intake is displayed as a number
+  const displayWaterIntake = mockHealthData.waterIntake;
+  
+  const waterPercentage = Math.min(Math.round((displayWaterIntake / waterGoal) * 100), 100);
+  const sleepPercentage = Math.min(Math.round((mockHealthData.sleepHours / 9) * 100), 100);
+  const stepsPercentage = Math.min(Math.round((mockHealthData.steps / stepsGoal) * 100), 100);
 
   const renderWaterProgress = () => {
     const size = isSmallScreen ? 90 : 100;
@@ -136,7 +171,7 @@ export default function Dashboard() {
             styles.cardValue,
             { fontSize: isSmallScreen ? 22 : 26 }
           ]}>
-            {healthData.waterIntake}
+            {displayWaterIntake}
           </ThemedText>
           <ThemedText style={styles.mlText}>
             ml
@@ -192,23 +227,23 @@ export default function Dashboard() {
               <View style={styles.statRow}>
                 <IconSymbol name="drop.fill" size={20} color="#2196F3" />
                 <ThemedText style={styles.statLabel}>Today:</ThemedText>
-                <ThemedText style={styles.statValue}>{waterGoal - healthData.waterIntake} ml</ThemedText>
+                <ThemedText style={styles.statValue}>{waterGoal - displayWaterIntake} ml</ThemedText>
               </View>
             </View>
           </View>
         </View>
 
         {/* Steps and Sleep Row */}
-        <View style={styles.metricRow}>
+        <View style={styles.metricContainer}>
           {/* Steps Card */}
           <Pressable 
-            style={[styles.metricCard, { backgroundColor: colorScheme === 'dark' ? '#1c1c1e' : '#fff' }]}
+            style={[styles.metricCard, { backgroundColor: colorScheme === 'dark' ? '#1c1c1e' : '#fff', flex: 1 }]}
             onPress={() => handleNavigation('insights')}
           >
             <ThemedText style={styles.metricTitle}>Steps</ThemedText>
             <View style={styles.metricContent}>
               <IconSymbol name="figure.walk" size={24} color="#4CAF50" />
-              <ThemedText style={styles.metricValue}>{healthData.steps.toLocaleString()}</ThemedText>
+              <ThemedText style={styles.metricValue}>{mockHealthData.steps.toLocaleString()}</ThemedText>
             </View>
             <View style={styles.progressBar}>
               <View style={[styles.progressFill, { width: `${stepsPercentage}%`, backgroundColor: '#4CAF50' }]} />
@@ -218,13 +253,13 @@ export default function Dashboard() {
 
           {/* Sleep Card */}
           <Pressable 
-            style={[styles.metricCard, { backgroundColor: colorScheme === 'dark' ? '#1c1c1e' : '#fff' }]}
+            style={[styles.metricCard, { backgroundColor: colorScheme === 'dark' ? '#1c1c1e' : '#fff', flex: 1 }]}
             onPress={() => handleNavigation('log')}
           >
             <ThemedText style={styles.metricTitle}>Sleep</ThemedText>
             <View style={styles.metricContent}>
               <IconSymbol name="moon.stars.fill" size={24} color="#9C27B0" />
-              <ThemedText style={styles.metricValue}>{healthData.sleepHours} hr</ThemedText>
+              <ThemedText style={styles.metricValue}>{mockHealthData.sleepHours.toFixed(1)} hr</ThemedText>
             </View>
             <View style={styles.progressBar}>
               <View style={[styles.progressFill, { width: `${sleepPercentage}%`, backgroundColor: '#9C27B0' }]} />
@@ -235,7 +270,7 @@ export default function Dashboard() {
 
         {/* Mood Card */}
         <Pressable 
-          style={[styles.moodCard, { backgroundColor: colorScheme === 'dark' ? '#1c1c1e' : '#fff' }]}
+          style={[styles.moodCard, { backgroundColor: colorScheme === 'dark' ? '#1c1c1e' : '#fff', width: '100%' }]}
           onPress={() => handleNavigation('log')}
         >
           <View style={styles.moodHeader}>
@@ -243,24 +278,24 @@ export default function Dashboard() {
             <IconSymbol name="plus" size={20} color="#2196F3" />
           </View>
           <View style={[styles.moodContent, { paddingVertical: 12, paddingHorizontal: 16 }]}>
-            <ThemedText style={[styles.moodEmoji, { paddingVertical: 12, paddingHorizontal: 16 }]}>{getStressEmoji(getStressLevel(healthData.stressLevel))}</ThemedText>
-            <ThemedText style={styles.moodLabel}>{getStressLevel(healthData.stressLevel)}</ThemedText>
+            <ThemedText style={[styles.moodEmoji, { paddingVertical: 12, paddingHorizontal: 16 }]}>{getStressEmoji(getStressLevel(mockHealthData.stressLevel))}</ThemedText>
+            <ThemedText style={styles.moodLabel}>{getStressLevel(mockHealthData.stressLevel)}</ThemedText>
           </View>
         </Pressable>
 
         {/* Heart Rate Card */}
-        <Pressable 
+        {/* <Pressable 
           style={[styles.heartCard, { backgroundColor: colorScheme === 'dark' ? '#1c1c1e' : '#fff' }]}
           onPress={() => handleNavigation('insights')}
         >
           <View style={styles.heartCardContent}>
             <View>
               <ThemedText style={styles.heartTitle}>Heart Rate</ThemedText>
-              <ThemedText style={styles.bpmValue}>{healthData.heartRate} BPM</ThemedText>
+              <ThemedText style={styles.bpmValue}>{mockHealthData.heartRate} BPM</ThemedText>
             </View>
             <IconSymbol name="heart.fill" size={32} color="#FF5252" />
           </View>
-        </Pressable>
+        </Pressable> */}
 
         {/* Sync Section */}
         <View style={styles.syncSection}>
@@ -385,16 +420,17 @@ const styles = StyleSheet.create({
     opacity: 0.7,
     marginTop: 2,
   },
-  metricRow: {
+  metricContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 16,
   },
   metricCard: {
-    width: '48%',
+    flex: 1,
     borderRadius: 16,
     padding: 16,
     paddingBottom: 12,
+    marginHorizontal: 4,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,

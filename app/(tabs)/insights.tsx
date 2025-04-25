@@ -16,6 +16,17 @@ type LogEntry = {
   stressLevel: number;
 };
 
+// Mock data for today with minimal values
+const today = new Date();
+const MOCK_DATE = format(today, 'yyyy-MM-dd');
+const MOCK_DATA: LogEntry[] = [
+  {
+    date: MOCK_DATE,
+    waterAmount: 250, // Very low water intake
+    stressLevel: 3 // Moderate stress
+  }
+];
+
 // Simple bar component for custom charts
 type BarProps = {
   height: number;
@@ -36,24 +47,28 @@ const Bar = ({ height, width, color, label }: BarProps) => {
 export default function InsightsScreen() {
   const colorScheme = useColorScheme() || 'light';
   const themeColors = Colors[colorScheme || 'light'];
-  const { value: logEntries, loading } = useAsyncStorage<LogEntry[]>('log-entries', []);
+  const { value: logEntries, refreshValue: refreshEntries, loading } = useAsyncStorage<LogEntry[]>('log-entries', MOCK_DATA);
   const [chartWidth, setChartWidth] = useState(Dimensions.get('window').width - 64);
-  const [activeTab, setActiveTab] = useState('weekly');
+  const [activeTab, setActiveTab] = useState('daily'); // Set to daily by default
   const [selectedMetric, setSelectedMetric] = useState('all');
   
-  // Replace useMockData with useHealthConnect
-  const { healthData, isInitialized, error } = useHealthConnect();
+  // Initialize with mock data if no entries exist
+  useEffect(() => {
+    if (!loading && (!logEntries || logEntries.length === 0)) {
+      refreshEntries();
+    }
+  }, [loading, logEntries]);
 
   // Generate dates for the current week
-  const today = new Date();
   const startOfCurrentWeek = startOfWeek(today, { weekStartsOn: 0 });
   const weekDays = [...Array(7)].map((_, i) => {
     const date = addDays(startOfCurrentWeek, i);
+    const isToday = format(date, 'yyyy-MM-dd') === MOCK_DATE;
     return {
       date,
       dayShort: format(date, 'E').charAt(0),
-      isToday: format(date, 'yyyy-MM-dd') === format(today, 'yyyy-MM-dd'),
-      isActive: Math.random() > 0.3, // Random activity for sample data
+      isToday,
+      isActive: isToday, // Only today is active
     };
   });
 
@@ -61,20 +76,36 @@ export default function InsightsScreen() {
   const getAggregatedData = () => {
     if (!logEntries || loading) return { water: 0, stress: 0, sleep: 0 };
 
-    const totalWater = logEntries.reduce((sum, entry) => sum + entry.waterAmount, 0);
-    const avgWater = logEntries.length ? totalWater / logEntries.length : 0;
+    // Only use entries for today
+    const todayEntries = logEntries.filter(entry => entry.date === MOCK_DATE);
     
-    const totalStress = logEntries.reduce((sum, entry) => sum + entry.stressLevel, 0);
-    const avgStress = logEntries.length ? totalStress / logEntries.length : 0;
+    const totalWater = todayEntries.reduce((sum, entry) => sum + (entry.waterAmount || 0), 0);
+    const avgWater = todayEntries.length ? totalWater / todayEntries.length : 0;
+    
+    const totalStress = todayEntries.reduce((sum, entry) => sum + (entry.stressLevel || 0), 0);
+    const avgStress = todayEntries.length ? totalStress / todayEntries.length : 0;
     
     return {
       water: Math.round(avgWater),
       stress: avgStress.toFixed(1),
-      sleep: 7.2 // Mock data
+      sleep: 4.5 // Low sleep hours
     };
   };
 
   const data = getAggregatedData();
+
+  // Mock health data for today with minimal values
+  const mockHealthData = {
+    weeklyProgress: 12, // Very low progress
+    weeklySteps: 1245, // Very few steps
+    caloriesBurned: 98, // Very few calories
+    sleepHours: 4.5, // Low sleep
+    activeDays: 1, // Only today
+    currentStreak: 1, // Just started
+    totalPoints: 150, // Low points
+    morningWalkDistance: 0.5, // Short walk
+    morningWalkCalories: 25 // Few calories burned
+  };
 
   const renderCircularProgress = (percent: number, color: string, innerContent: React.ReactNode) => {
     return (
@@ -136,10 +167,10 @@ export default function InsightsScreen() {
         {/* Main Progress Circle */}
         <View style={[styles.mainCard, { backgroundColor: colorScheme === 'dark' ? '#1c1c1e' : '#fff' }]}>
           <View style={[styles.progressSection, { padding: 20 }]}>
-            {renderCircularProgress(healthData.weeklyProgress, '#4CAF50', 
+            {renderCircularProgress(mockHealthData.weeklyProgress, '#4CAF50', 
               <View style={[styles.innerProgressContent, { padding: 10 }]}>
-                <ThemedText style={[styles.progressPercent, { fontSize: 24, marginBottom: 4 }]}>{healthData.weeklyProgress}%</ThemedText>
-                <ThemedText style={[styles.progressSubtext, { fontSize: 14 }]}>{healthData.weeklySteps.toLocaleString()} steps</ThemedText>
+                <ThemedText style={[styles.progressPercent, { fontSize: 24, marginBottom: 4 }]}>{mockHealthData.weeklyProgress}%</ThemedText>
+                <ThemedText style={[styles.progressSubtext, { fontSize: 14 }]}>{mockHealthData.weeklySteps.toLocaleString()} steps</ThemedText>
               </View>
             )}
           </View>
@@ -147,13 +178,13 @@ export default function InsightsScreen() {
           <View style={styles.mainMetrics}>
             <View style={styles.metricItem}>
               <IconSymbol name="flame.fill" size={16} color="#FF9500" />
-              <ThemedText style={styles.metricValue}>{healthData.caloriesBurned}</ThemedText>
+              <ThemedText style={styles.metricValue}>{mockHealthData.caloriesBurned}</ThemedText>
               <ThemedText style={styles.metricLabel}>Calories</ThemedText>
             </View>
             
             <View style={styles.metricItem}>
               <IconSymbol name="moon.fill" size={16} color="#9C27B0" />
-              <ThemedText style={styles.metricValue}>{healthData.sleepHours}h</ThemedText>
+              <ThemedText style={styles.metricValue}>{mockHealthData.sleepHours}h</ThemedText>
               <ThemedText style={styles.metricLabel}>Sleep</ThemedText>
             </View>
             
@@ -167,9 +198,9 @@ export default function InsightsScreen() {
 
         {/* Weekly Activity */}
         <View style={[styles.weeklyCard, { backgroundColor: colorScheme === 'dark' ? '#1c1c1e' : '#fff' }]}>
-          <ThemedText style={styles.cardTitle}>This Week</ThemedText>
+          <ThemedText style={styles.cardTitle}>Today's Activity</ThemedText>
           
-          {/* <View style={styles.weekCalendar}>
+          <View style={styles.weekCalendar}>
             {weekDays.map((day, index) => (
               <View key={index} style={styles.calendarDay}>
                 <ThemedText 
@@ -189,25 +220,25 @@ export default function InsightsScreen() {
                 ]} />
               </View>
             ))}
-          </View> */}
+          </View>
           
           <View style={styles.weekStats}>
             <View style={styles.statBlock}>
-              <ThemedText style={styles.statNumber}>{healthData.activeDays}</ThemedText>
+              <ThemedText style={styles.statNumber}>{mockHealthData.activeDays}</ThemedText>
               <ThemedText style={styles.statLabel}>Active Days</ThemedText>
             </View>
             
             <View style={styles.statDivider} />
             
             <View style={styles.statBlock}>
-              <ThemedText style={styles.statNumber}>{healthData.currentStreak}</ThemedText>
+              <ThemedText style={styles.statNumber}>{mockHealthData.currentStreak}</ThemedText>
               <ThemedText style={styles.statLabel}>Day Streak</ThemedText>
             </View>
             
             <View style={styles.statDivider} />
             
             <View style={styles.statBlock}>
-              <ThemedText style={styles.statNumber}>{healthData.totalPoints}</ThemedText>
+              <ThemedText style={styles.statNumber}>{mockHealthData.totalPoints}</ThemedText>
               <ThemedText style={styles.statLabel}>Total Points</ThemedText>
             </View>
           </View>
@@ -215,7 +246,7 @@ export default function InsightsScreen() {
 
         {/* Recent Activities */}
         <View style={[styles.activitiesCard, { backgroundColor: colorScheme === 'dark' ? '#1c1c1e' : '#fff' }]}>
-          <ThemedText style={styles.cardTitle}>Recent Activities</ThemedText>
+          <ThemedText style={styles.cardTitle}>Today's Activities</ThemedText>
           
           <View style={styles.activityItem}>
             <View style={[styles.activityIcon, { backgroundColor: 'rgba(76, 175, 80, 0.1)' }]}>
@@ -223,11 +254,11 @@ export default function InsightsScreen() {
             </View>
             <View style={styles.activityInfo}>
               <ThemedText style={styles.activityTitle}>Morning Walk</ThemedText>
-              <ThemedText style={styles.activityTime}>Today, 7:30 AM</ThemedText>
+              <ThemedText style={styles.activityTime}>{format(today, 'h:mm a')}</ThemedText>
             </View>
             <View style={styles.activityStats}>
-              <ThemedText style={styles.activityMetric}>{healthData.morningWalkDistance} km</ThemedText>
-              <ThemedText style={styles.activitySubMetric}>{healthData.morningWalkCalories} cal</ThemedText>
+              <ThemedText style={styles.activityMetric}>{mockHealthData.morningWalkDistance} km</ThemedText>
+              <ThemedText style={styles.activitySubMetric}>{mockHealthData.morningWalkCalories} cal</ThemedText>
             </View>
           </View>
           
@@ -237,25 +268,11 @@ export default function InsightsScreen() {
             </View>
             <View style={styles.activityInfo}>
               <ThemedText style={styles.activityTitle}>Water Intake</ThemedText>
-              <ThemedText style={styles.activityTime}>Today, 2:15 PM</ThemedText>
+              <ThemedText style={styles.activityTime}>{format(today, 'h:mm a')}</ThemedText>
             </View>
             <View style={styles.activityStats}>
-              <ThemedText style={styles.activityMetric}>{healthData.waterIntake} ml</ThemedText>
-              <ThemedText style={styles.activitySubMetric}>{healthData.waterIntakeCups} cups</ThemedText>
-            </View>
-          </View>
-          
-          <View style={styles.activityItem}>
-            <View style={[styles.activityIcon, { backgroundColor: 'rgba(156, 39, 176, 0.1)' }]}>
-              <IconSymbol name="moon.fill" size={18} color="#9C27B0" />
-            </View>
-            <View style={styles.activityInfo}>
-              <ThemedText style={styles.activityTitle}>Sleep</ThemedText>
-              <ThemedText style={styles.activityTime}>Yesterday</ThemedText>
-            </View>
-            <View style={styles.activityStats}>
-              <ThemedText style={styles.activityMetric}>{healthData.sleepDuration}</ThemedText>
-              <ThemedText style={styles.activitySubMetric}>{healthData.sleepQuality}</ThemedText>
+              <ThemedText style={styles.activityMetric}>{data.water} ml</ThemedText>
+              <ThemedText style={styles.activitySubMetric}>{(data.water / 250).toFixed(1)} cups</ThemedText>
             </View>
           </View>
         </View>

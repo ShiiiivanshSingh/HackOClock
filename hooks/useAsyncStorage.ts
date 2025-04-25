@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export function useAsyncStorage<T>(key: string, initialValue: T) {
@@ -6,22 +6,32 @@ export function useAsyncStorage<T>(key: string, initialValue: T) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  useEffect(() => {
-    const getStoredValue = async () => {
-      try {
-        setLoading(true);
-        const item = await AsyncStorage.getItem(key);
-        const value = item ? JSON.parse(item) : initialValue;
-        setStoredValue(value);
-      } catch (e) {
-        setError(e instanceof Error ? e : new Error(String(e)));
-      } finally {
-        setLoading(false);
+  const getStoredValue = useCallback(async () => {
+    try {
+      setLoading(true);
+      const item = await AsyncStorage.getItem(key);
+      
+      if (item) {
+        try {
+          const value = JSON.parse(item);
+          setStoredValue(value);
+        } catch (parseError) {
+          setError(parseError instanceof Error ? parseError : new Error(String(parseError)));
+          setStoredValue(initialValue);
+        }
+      } else {
+        setStoredValue(initialValue);
       }
-    };
-
-    getStoredValue();
+    } catch (e) {
+      setError(e instanceof Error ? e : new Error(String(e)));
+    } finally {
+      setLoading(false);
+    }
   }, [key, initialValue]);
+
+  useEffect(() => {
+    getStoredValue();
+  }, [getStoredValue]);
 
   const setValue = async (value: T) => {
     try {
@@ -42,5 +52,9 @@ export function useAsyncStorage<T>(key: string, initialValue: T) {
     }
   };
 
-  return { value: storedValue, setValue, removeValue, loading, error };
+  const refreshValue = async () => {
+    await getStoredValue();
+  };
+
+  return { value: storedValue, setValue, removeValue, refreshValue, loading, error };
 } 

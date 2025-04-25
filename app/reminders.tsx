@@ -8,6 +8,7 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { useAsyncStorage } from '@/hooks/useAsyncStorage';
+import * as Notifications from 'expo-notifications';
 
 // Types for reminder settings
 type ReminderFrequency = '30min' | '1hr' | '2hr' | '3hr' | '4hr';
@@ -165,7 +166,6 @@ export default function RemindersScreen() {
       }
     } catch (error) {
       Alert.alert('Error', 'Failed to save reminder settings');
-      console.error(error);
     }
   };
   
