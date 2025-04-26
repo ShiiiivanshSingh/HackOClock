@@ -2,21 +2,23 @@
 
 <div align="center">
   <h1>EasyFit 🌟</h1>
-  <h2>by team meowz</h2>
+  <h3>by team meowz >.<</h3>
   
 
   
-  <p>Your personal companion for holistic health and wellness tracking</p>
+  <p>Your personal companion for holistic health and wellness tracking!</p>
 
-  <a href="https://github.com/ShiiiivanshSingh/HackOClock/stargazers">
-    <img src="https://img.shields.io/badge/Stars-0-green?style=for-the-badge&color=4CAF50" alt="stars" />
-  </a>
-  <a href="https://github.com/ShiiiivanshSingh/HackOClock/network/members">
-    <img src="https://img.shields.io/badge/Forks-0-green?style=for-the-badge&color=4CAF50" alt="forks" />
-  </a>
-  <a href="https://github.com/ShiiiivanshSingh/HackOClock/issues">
-    <img src="https://img.shields.io/badge/Issues-0-green?style=for-the-badge&color=4CAF50" alt="issues" />
-  </a>
+ ![GitHub stars](https://img.shields.io/github/stars/ShiiiivanshSingh/HackOClock?style=for-the-badge)
+![GitHub forks](https://img.shields.io/github/forks/ShiiiivanshSingh/HackOClock?style=for-the-badge)
+![GitHub issues](https://img.shields.io/github/issues/ShiiiivanshSingh/HackOClock?style=for-the-badge)
+
+
+
+
+![Black Modern Gradient Programmer Presentation](https://github.com/user-attachments/assets/c6c01441-e48e-4af4-9d6d-6bd91f09eb22)
+
+
+
   
   <p align="center">
     <a href="#-key-features">✨ Features</a> &nbsp;&nbsp;•&nbsp;&nbsp;
@@ -129,8 +131,13 @@ Our mission is to empower users to make informed decisions about their health by
 
 <a name="screenshots"></a>
 ## 📱 Screenshots
- coming sooon
-<!-- ![App Screenshots](./screenshots.png) -->
+
+
+![Black Modern Gradient Programmer Presentation](https://github.com/user-attachments/assets/77692529-2b96-494b-b844-5af04a095a31)
+
+![IMG-20250426-WA0026](https://github.com/user-attachments/assets/e13fa1e5-d79a-4246-aa84-af07a83c2e12)
+
+![IMG-20250426-WA0023](https://github.com/user-attachments/assets/dee4eebe-a4e8-4208-a771-6ca5bb8fbc79)
 
 <a name="getting-started"></a>
 ## 🚀 Getting Started
@@ -222,4 +229,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
   </p>
 </div>
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
